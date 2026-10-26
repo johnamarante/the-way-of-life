@@ -1,0 +1,26 @@
+# Android build output and local tooling
+android/build/
+android/app/build/
+android/.gradle/
+android/.idea/
+android/.kotlin/
+android/local.properties
+android/captures/
+*.apk
+*.aab
+*.iml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Claude Code personal settings (launch.json is shared and kept)
+.claude/settings.local.json
+
+# OS and editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

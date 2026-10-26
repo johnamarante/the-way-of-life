@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EFE3C2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Way of Life">
+<title>The Way of Life</title>
+<style>
+  :root {
+    --parchment: #EFE3C2;
+    --button-bg: rgba(255, 250, 235, 0.72);
+    --button-fg: #4A3B22;
+    --button-border: rgba(74, 59, 34, 0.35);
+    /* Width / height of the board image. */
+    --board-aspect: __BOARD_ASPECT__;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--parchment);
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    height: 100dvh;
+  }
+  /* Fit the whole board on screen without cropping, like ContentScale.Fit on Android. */
+  .board {
+    position: relative;
+    width: min(100vw, calc(100vh * var(--board-aspect)));
+    width: min(100vw, calc(100dvh * var(--board-aspect)));
+    aspect-ratio: var(--board-aspect);
+    isolation: isolate;
+  }
+  .board img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+  /* Glow positions are percentages of the board box, so they track the image at any size. */
+  .glow {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    background: radial-gradient(circle closest-side,
+      rgba(255, 246, 216, 0.68) 0%,
+      rgba(255, 233, 166, 0.26) 50%,
+      rgba(255, 233, 166, 0) 100%);
+  }
+  .glow.lit { opacity: 1; }
+  .glow.current {
+    background: radial-gradient(circle closest-side,
+      rgba(255, 246, 216, 0.88) 0%,
+      rgba(255, 233, 166, 0.33) 50%,
+      rgba(255, 233, 166, 0) 100%);
+  }
+  .arrow {
+    position: fixed;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--button-border);
+    background: var(--button-bg);
+    color: var(--button-fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+  .arrow:active { transform: scale(0.94); }
+  .arrow:focus-visible { outline: 3px solid #B8860B; outline-offset: 2px; }
+  .arrow svg { width: 24px; height: 24px; }
+  #back { left: calc(16px + env(safe-area-inset-left)); }
+  #forward { right: calc(16px + env(safe-area-inset-right)); }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+</style>
+</head>
+<body>
+<div class="board" id="board">
+  <img src="__BOARD_SRC__" alt="">
+</div>
+<button class="arrow" id="back" type="button" aria-label="Back one bead">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+</button>
+<button class="arrow" id="forward" type="button" aria-label="Forward one bead">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+</button>
+<div class="sr-only" id="status" aria-live="polite"></div>
+<script>
+  // Bead map generated from rosary_beads.json. x and r are fractions of image width, y of image height.
+  const BEADS = __BEADS_JSON__;
+  const STORAGE_KEY = "wayoflife.rosary.position";
+  const LAST = BEADS.length - 1;
+
+  // Position rules, same as the Android RosaryPosition: circular in both directions, bead 0 always lit.
+  function advance(position) {
+    return position >= LAST ? 0 : position + 1;
+  }
+  function retreat(position) {
+    return position <= 0 ? LAST : position - 1;
+  }
+
+  function loadPosition() {
+    try {
+      const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+      if (Number.isInteger(saved) && saved >= 0 && saved <= LAST) return saved;
+    } catch (e) {
+      // Storage blocked (private mode or file:// restrictions): start from the beginning.
+    }
+    return 0;
+  }
+  function savePosition(position) {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(position));
+    } catch (e) {
+      // Nothing to do; progress just won't persist in this browser.
+    }
+  }
+
+  const board = document.getElementById("board");
+  const status = document.getElementById("status");
+  const glows = BEADS.map(bead => {
+    const glow = document.createElement("div");
+    glow.className = "glow";
+    glow.style.left = (bead.x * 100) + "%";
+    glow.style.top = (bead.y * 100) + "%";
+    board.appendChild(glow);
+    return glow;
+  });
+
+  let position = loadPosition();
+
+  function render() {
+    glows.forEach((glow, index) => {
+      const isCurrent = index === position;
+      const bead = BEADS[index];
+      // Glow diameter: 1.8x the bead radius on each side, 2.25x for the current bead.
+      glow.style.width = (bead.r * 2 * (isCurrent ? 2.25 : 1.8) * 100) + "%";
+      glow.classList.toggle("lit", index <= position);
+      glow.classList.toggle("current", isCurrent);
+    });
+    status.textContent = "Bead " + (position + 1) + " of " + BEADS.length;
+  }
+
+  function move(next) {
+    position = next;
+    savePosition(position);
+    render();
+  }
+
+  document.getElementById("forward").addEventListener("click", () => move(advance(position)));
+  document.getElementById("back").addEventListener("click", () => move(retreat(position)));
+  document.addEventListener("keydown", event => {
+    if (event.key === "ArrowRight") move(advance(position));
+    else if (event.key === "ArrowLeft") move(retreat(position));
+  });
+
+  render();
+</script>
+</body>
+</html>
