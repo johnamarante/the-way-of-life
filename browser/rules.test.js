@@ -47,7 +47,8 @@ test("name matching: spec 6.4 worked examples", () => {
     "acutis": "St. Carlo Acutis", "paul": "St. Paul", "mary": "The Blessed Virgin Mary",
     "mother teresa": "St. Teresa of Calcutta (Mother Teresa)", "Padre Pio (Pio of Pietrelcina)": "St. Padre Pio (Pio of Pietrelcina)",
     "juan": "vague", "jean": "vague", "juan diego": "St. Juan Diego", "simon": "vague",
-    "Thérèse": "St. Thérèse of Lisieux", "therese": "St. Thérèse of Lisieux", "Ávila": "St. Teresa of Ávila",
+    "Thérèse": "St. Thérèse of Lisieux", "therese": "St. Thérèse of Lisieux",
+    "teres of lisieux": "St. Thérèse of Lisieux", "terese of lisyeux": "St. Thérèse of Lisieux", "terez of leezyuh": "St. Thérèse of Lisieux", "Ávila": "St. Teresa of Ávila",
     "michael": "St. Michael the Archangel", "archangel": "vague", "louis 9": "St. Louis IX", "William": "St. William of Gellone",
     "zzzz": "none", "  St. ": "ignored",
   };
