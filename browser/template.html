@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#EFE3C2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -219,9 +219,14 @@
   .modal-body.split { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
   .modal-body.split > * { flex: none; }
   /* Prayer arrangement: the whole screen, over the board and the bar, so long prayers fit (spec 8.2). */
-  .modal-wrap.full { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); background: var(--paper); z-index: 10; align-items: stretch; }
+  .modal-wrap.full { top: var(--vv-top, 0px); bottom: auto; height: var(--vv-height, 100%); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); background: var(--paper); z-index: 10; align-items: stretch; }
   .modal-wrap.full .modal { max-width: 760px; max-height: none; border: none; border-radius: 0; box-shadow: none; }
-  .modal-wrap.full .modal-body { padding: 10px 14px 16px; }
+  .modal-wrap.full .modal-body { padding: 10px 14px 0; }
+  /* The buttons under an arranged prayer stay in view at the bottom of the screen while the list scrolls. */
+  .sheet-foot { position: sticky; bottom: 0; z-index: 3; background: var(--paper); padding: 8px 0 12px; box-shadow: 0 -8px 8px -8px rgba(40, 25, 5, 0.25); }
+  .sheet-foot .feedback { margin: 0 0 8px; min-height: 0; }
+  .sheet-foot .feedback:empty { display: none; }
+  .modal-wrap.full .modal-body.split { padding-bottom: 14px; }
   .modal-wrap.full .capsules { gap: 5px; margin-top: 4px; }
   .modal-wrap.full .capsule { padding: 6px 14px; }
   .modal-wrap.full .modal h2 { margin-bottom: 6px; }
@@ -231,8 +236,9 @@
   .modal-wrap.full .modal-body.split { flex: 1 1 auto; }
   .modal-body.split .guess { margin: 10px 0 0; }
   .modal-body.split .guess + .btn { margin-top: 10px; }
-  .modal .kicker { font-size: 0.78em; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 6px; padding-right: 70px; }
-  .modal h2 { margin: 0 0 10px; font-size: 1.33em; font-weight: normal; padding-right: 70px; }
+  .modal .kicker { font-size: 0.78em; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 6px; }
+  .modal h2 { margin: 0 0 10px; font-size: 1.33em; font-weight: normal; }
+  .modal.timed .kicker, .modal.timed h2 { padding-right: 70px; }
   .modal p { margin: 0 0 12px; }
   .timer {
     position: absolute;
@@ -276,6 +282,20 @@
   .teaching p { margin: 0; }
   .teaching a { color: #6B4A06; word-break: break-word; }
 
+  /* ---- Phones: more compact challenge windows ---- */
+  @media (max-width: 520px), (max-height: 700px) {
+    .modal { font-size: calc(16px * var(--ts)); line-height: 1.3; }
+    .modal-body { padding: 12px 14px 14px; }
+    .modal h2 { font-size: 1.2em; margin-bottom: 8px; }
+    .modal p { margin-bottom: 8px; }
+    .modal .btn { padding: 0.5em 0.8em; }
+    .modal .stack { gap: 7px; }
+    .modal .portrait { width: 6em; height: 6em; margin: 2px auto 8px; }
+    .modal .result-name { font-size: 1.15em; }
+    .modal .answer-note { margin: 8px 0; padding: 8px 10px; }
+    .timer { top: 10px; right: 10px; }
+  }
+
   /* ---- Prayer capsules ---- */
   /* Side margins leave room to scroll with either thumb without grabbing a capsule (spec 8.2). */
   .capsules { position: relative; display: flex; flex-direction: column; gap: 8px; margin: 6px 24px 12px; }
@@ -314,7 +334,8 @@
   }
   .capsules.over .capsule { cursor: default; }
   .btn.shudder { animation: shudder 320ms ease; }
-  .drop-line { position: absolute; left: 0; right: 0; height: 3px; border-radius: 2px; background: var(--ink); pointer-events: none; }
+  /* Wider than the capsules, so it is easy to see where the held one will land. */
+  .drop-line { position: absolute; left: -16px; right: -16px; height: 4px; border-radius: 2px; background: var(--ink); pointer-events: none; }
   .capsules.done .capsule { background: var(--right-bg); border-color: var(--right); color: var(--right); }
 
   /* ---- Codex ---- */

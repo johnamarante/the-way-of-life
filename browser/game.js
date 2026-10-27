@@ -135,6 +135,24 @@
     layoutBoard();
   }
   window.addEventListener("resize", layoutBoard);
+  // The area left visible by the on-screen keyboard, for the full-screen challenges (Safari on iPhone
+  // covers the page with the keyboard instead of shrinking it).
+  function trackVisibleArea() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      document.documentElement.style.setProperty("--vv-height", vv.height + "px");
+      document.documentElement.style.setProperty("--vv-top", vv.offsetTop + "px");
+    };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+  }
+  trackVisibleArea();
+  // Scrolls a button that just appeared at the end of a challenge into view (small screens).
+  function reveal(node) {
+    requestAnimationFrame(() => node.scrollIntoView({ block: "nearest", behavior: "smooth" }));
+  }
 
   // Lights beads 0..litUpTo; the bead at `current` (or the Cross) gets the stronger glow and the view follows it.
   function renderBoard(litUpTo, current) {
@@ -248,9 +266,11 @@
     const modal = $("modal");
     const items = children.filter(c => c !== null && c !== undefined);
     const body = el("div", { class: "modal-body" }, items.filter(c => !(c.classList && c.classList.contains("timer"))));
+    const timers = items.filter(c => c.classList && c.classList.contains("timer"));
     modal.textContent = "";
+    modal.classList.toggle("timed", timers.length > 0);
     $("modal-wrap").classList.remove("full");
-    modal.append(...items.filter(c => c.classList && c.classList.contains("timer")), body);
+    modal.append(...timers, body);
     placeModal();
     $("modal-wrap").hidden = false;
     return body;
@@ -361,12 +381,13 @@
         right.classList.add("right");
         feedback.textContent = "Not quite.";
         feedback.className = "feedback bad";
-        extra.append(el("div", { class: "answer-note" }, q.answer),
-          button("Next", () => {
-            state.challenge = { kind: "question", q: R.drawQuestion(state, DATA, options.advancedQuestions, rng) };
-            saveGame();
-            openChallenge();
-          }, "primary"));
+        const next = button("Next", () => {
+          state.challenge = { kind: "question", q: R.drawQuestion(state, DATA, options.advancedQuestions, rng) };
+          saveGame();
+          openChallenge();
+        }, "primary");
+        extra.append(el("div", { class: "answer-note" }, q.answer), next);
+        reveal(next);
       }
     }
     // Saint card: ask for prayers before answering (spec 7.2).
@@ -460,16 +481,18 @@
         saveGame();
         renderHud([saint.name]);
       }
+      const next = button("Continue", () => {
+        closeModal();
+        state.challenge = null;
+        nextChallenge();
+      }, "primary");
       openModal(
         el("p", { class: "kicker" }, "Saint Challenge"),
         el("img", { class: "portrait", src: PORTRAITS[saint.portrait], alt: saint.name }),
         el("p", { class: "result-name" }, saint.name),
         el("p", { class: "center" }, won ? "Well done! This saint's card has joined your hand." : "Not this time. No card was awarded."),
-        button("Continue", () => {
-          closeModal();
-          state.challenge = null;
-          nextChallenge();
-        }, "primary"));
+        next);
+      reveal(next);
     }
     input.addEventListener("input", () => {
       if (!over && !accepted()) feedback.textContent = "";
@@ -487,7 +510,8 @@
       el("div", { class: "guess" }, input),
       button("Give Up", () => finish(false))).classList.add("split");
     $("modal-wrap").classList.add("full");
-    input.focus({ preventScroll: true });
+    // On a phone the keyboard would cover half the screen at once, so it opens only when the field is tapped.
+    if (!matchMedia("(hover: none)").matches) input.focus({ preventScroll: true });
   }
 
   // Restarts the shudder animation (the one a grabbed prayer capsule gives).
@@ -593,7 +617,8 @@
     function autoScroll() {
       if (!drag) return;
       const r = drag.scroller.getBoundingClientRect();
-      const step = drag.y < r.top + 48 ? -8 : drag.y > r.bottom - 48 ? 8 : 0;
+      const bottom = foot.getBoundingClientRect().top;
+      const step = drag.y < r.top + 48 ? -8 : drag.y > bottom - 48 ? 8 : 0;
       if (step) {
         drag.scroller.scrollTop += step;
         follow();
@@ -634,7 +659,7 @@
         closeModal();
         afterMove(result.restored, nextChallenge);
       }, "primary");
-      feedback.after(next);
+      actions.replaceChildren(next);
       next.focus({ preventScroll: true });
     }
     // Giving up (spec 8.4) moves straight on to the next prayer in the deck: for a Prayer Challenge it
@@ -659,7 +684,7 @@
       list.classList.add("over");
       feedback.className = "feedback bad";
       feedback.textContent = "Time's up.";
-      feedback.after(button("Try another prayer", () => {
+      actions.replaceChildren(button("Try another prayer", () => {
         state.challenge = { kind: "prayer", prayer: R.drawPrayer(state, DATA, options.easyPrayers, rng), penance: false };
         saveGame();
         openChallenge();
@@ -679,7 +704,7 @@
       giveUpBtn.disabled = true;
       feedback.className = "feedback good";
       feedback.textContent = "Correct! Your penance is complete.";
-      feedback.after(button("Continue", () => {
+      actions.replaceChildren(button("Continue", () => {
         closeModal();
         const result = R.finishPenance(state, rng);
         state.challenge = null;
@@ -688,14 +713,16 @@
     }
     const submitBtn = penance ? button("Submit", submit, "primary") : null;
     const giveUpBtn = button("Give Up", giveUp);
+    // Feedback and buttons stay at the bottom of the screen, so Continue is always in view (spec 8.4).
+    const actions = el("div", { class: "row" }, giveUpBtn, submitBtn);
+    const foot = el("div", { class: "sheet-foot" }, feedback, actions);
     draw();
     openModal(
       badge,
       sheetHead(penance ? "Penance" : beadLabel(state.position)),
       el("h2", {}, prayer.title),
       list,
-      el("div", { class: "row" }, giveUpBtn, submitBtn),
-      feedback);
+      foot);
     $("modal-wrap").classList.add("full");
     if (!penance) {
       timer = startTimer(R.prayerSeconds(prayer.segments.length), (elapsed, remaining) => setBadge(badge, remaining), timeUp);

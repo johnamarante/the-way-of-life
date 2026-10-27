@@ -66,6 +66,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.layout.positionInRoot
@@ -646,6 +647,10 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
             state = PrayerState.PASSED
         }
     }
+    // When the prayer is over, bring Continue (or Try another prayer) into view below a long list.
+    LaunchedEffect(state) {
+        if (state != PrayerState.ARRANGING) scroll.animateScrollTo(scroll.maxValue)
+    }
     // Long prayers scroll while a capsule is held near the top or bottom edge.
     LaunchedEffect(held >= 0) {
         while (held >= 0) {
@@ -730,11 +735,17 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
                     else -> null
                 }
                 if (y != null) {
+                    // Wider than the capsules, so it is easy to see where the held one will land.
                     Box(
                         Modifier
-                            .offset { IntOffset(0, (y - 1.5.dp.toPx()).roundToInt()) }
-                            .fillMaxWidth()
-                            .height(3.dp)
+                            .offset { IntOffset(0, (y - 2.dp.toPx()).roundToInt()) }
+                            .layout { measurable, constraints ->
+                                val overhang = DROP_LINE_OVERHANG.roundToPx()
+                                val width = constraints.maxWidth + 2 * overhang
+                                val line = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+                                layout(constraints.maxWidth, line.height) { line.place(-overhang, 0) }
+                            }
+                            .height(4.dp)
                             .background(Palette.ink, RoundedCornerShape(2.dp)),
                     )
                 }
@@ -773,6 +784,7 @@ private enum class PrayerState { ARRANGING, PASSED, TIMED_OUT }
 private val FULL_SCREEN_MAX_WIDTH = 760.dp
 private val CAPSULE_GAP = 5.dp
 private val CAPSULE_SIDE_MARGIN = 24.dp
+private val DROP_LINE_OVERHANG = 16.dp
 private const val REMINDER_SECONDS = 5
 
 /** The short shudder of a grabbed prayer capsule, also used to nudge Next Clue (spec 6.2, 8.2). */
