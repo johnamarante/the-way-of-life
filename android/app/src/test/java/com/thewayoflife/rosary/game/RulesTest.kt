@@ -84,6 +84,7 @@ class RulesTest {
             "Padre Pio (Pio of Pietrelcina)" to "St. Padre Pio (Pio of Pietrelcina)", "juan" to "vague", "jean" to "vague",
             "juan diego" to "St. Juan Diego", "simon" to "vague", "Thérèse" to "St. Thérèse of Lisieux",
             "teres of lisieux" to "St. Thérèse of Lisieux", "terese of lisyeux" to "St. Thérèse of Lisieux", "terez of leezyuh" to "St. Thérèse of Lisieux",
+            "john vinay" to "St. John Vianney", "john vyanay" to "St. John Vianney", "vianney" to "St. John Vianney",
             "Ávila" to "St. Teresa of Ávila", "michael" to "St. Michael the Archangel", "archangel" to "vague",
             "louis 9" to "St. Louis IX", "William" to "St. William of Gellone", "zzzz" to "none", "  St. " to "ignored",
         )
