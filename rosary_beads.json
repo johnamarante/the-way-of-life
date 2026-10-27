@@ -2,7 +2,7 @@
   "image": "rosary_board_4x_complete_latest.png",
   "imageWidth": 2392,
   "imageHeight": 3840,
-  "note": "x, y, r are normalized: x and r divided by imageWidth, y divided by imageHeight. Index 0 is the start bead at the bottom.",
+  "note": "x, y, r are normalized: x and r divided by imageWidth, y divided by imageHeight. Index 0 is the start bead at the bottom. 'cross' is the goal at the top (logical index 58); it is not a bead.",
   "beads": [
     {
       "index": 0,
@@ -410,5 +410,11 @@
       "y": 0.1159,
       "r": 0.0159
     }
-  ]
+  ],
+  "cross": {
+    "index": 58,
+    "x": 0.7157,
+    "y": 0.0326,
+    "r": 0.065
+  }
 }

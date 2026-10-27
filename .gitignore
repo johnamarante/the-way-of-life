@@ -10,6 +10,14 @@ android/captures/
 *.aab
 *.iml
 
+# .NET tools
+tools/*/bin/
+tools/*/obj/
+portraits/*.part
+
+# Source material that is not ours to publish (the Catechism text is copyrighted)
+Catechism of the Catholic Church - USCCB.pdf
+
 # Python
 __pycache__/
 *.pyc

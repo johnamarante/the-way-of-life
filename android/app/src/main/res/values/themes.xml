@@ -1,6 +1,6 @@
 <resources>
     <style name="Theme.TheWayOfLife" parent="android:style/Theme.Material.Light.NoActionBar">
-        <item name="android:fontFamily">sans</item>
+        <item name="android:fontFamily">serif</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/parchment</item>
         <item name="android:colorAccent">#5B4026</item>

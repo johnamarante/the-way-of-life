@@ -12,22 +12,37 @@
 <style>
   :root {
     --parchment: #EFE3C2;
-    --button-bg: rgba(255, 250, 235, 0.72);
-    --button-fg: #4A3B22;
-    --button-border: rgba(74, 59, 34, 0.35);
+    --paper: #FBF5E6;
+    --ink: #3B2A14;
+    --ink-soft: #6B5534;
+    --line: #B89B66;
+    --gold: #B8860B;
+    --gold-soft: #F3E2B3;
+    --right: #2F6B2F;
+    --right-bg: #DCEBD5;
+    --wrong: #8E2323;
+    --wrong-bg: #F3D9D4;
+    --shadow: 0 6px 24px rgba(40, 25, 5, 0.28);
+    --serif: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", serif;
     /* Width / height of the board image. */
     --board-aspect: __BOARD_ASPECT__;
+    /* Text size and challenge window size, set from Options (spec 11.2). */
+    --ts: 0.85;
+    --modal-w: 480px;
+    --modal-h: 50%;
   }
+  * { box-sizing: border-box; }
   html, body {
     margin: 0;
     height: 100%;
     background: var(--parchment);
+    color: var(--ink);
+    font-family: var(--serif);
     overflow: hidden;
     overscroll-behavior: none;
-    -webkit-user-select: none;
-    user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+  button, input { font-family: var(--serif); font-size: inherit; color: inherit; }
   body {
     display: flex;
     align-items: center;
@@ -35,22 +50,21 @@
     height: 100vh;
     height: 100dvh;
   }
-  /* Fit the whole board on screen without cropping, like ContentScale.Fit on Android. */
+  [hidden] { display: none !important; }
+
+  /* ---- Board ---- */
+  /* Sized and moved by game.js: the whole board on the title screen, zoomed on the player otherwise. */
   .board {
-    position: relative;
-    width: min(100vw, calc(100vh * var(--board-aspect)));
+    position: fixed;
+    left: 0;
+    top: 0;
     width: min(100vw, calc(100dvh * var(--board-aspect)));
     aspect-ratio: var(--board-aspect);
+    transform-origin: 0 0;
     isolation: isolate;
   }
-  .board img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    -webkit-user-drag: none;
-  }
-  /* Glow positions are percentages of the board box, so they track the image at any size. */
+  .board.moving { transition: transform 700ms ease; }
+  .board img { display: block; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; }
   .glow {
     position: absolute;
     aspect-ratio: 1;
@@ -61,129 +75,349 @@
     opacity: 0;
     transition: opacity 200ms ease;
     background: radial-gradient(circle closest-side,
-      rgba(255, 246, 216, 0.68) 0%,
-      rgba(255, 233, 166, 0.26) 50%,
-      rgba(255, 233, 166, 0) 100%);
+      rgba(255, 246, 216, 0.68) 0%, rgba(255, 233, 166, 0.26) 50%, rgba(255, 233, 166, 0) 100%);
   }
   .glow.lit { opacity: 1; }
   .glow.current {
     background: radial-gradient(circle closest-side,
-      rgba(255, 246, 216, 0.88) 0%,
-      rgba(255, 233, 166, 0.33) 50%,
-      rgba(255, 233, 166, 0) 100%);
+      rgba(255, 246, 216, 0.88) 0%, rgba(255, 233, 166, 0.33) 50%, rgba(255, 233, 166, 0) 100%);
   }
-  .arrow {
+
+  /* ---- In-game bar: menu button, saint cards, streak ---- */
+  .hud {
     position: fixed;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    width: 48px;
-    height: 48px;
+    top: env(safe-area-inset-top);
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(rgba(239, 227, 194, 0.94), rgba(239, 227, 194, 0.78));
+    border-bottom: 1px solid rgba(184, 155, 102, 0.6);
+    z-index: 9; /* above the modal backdrop (8) so saint cards stay tappable during a question */
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .stats { flex-basis: 100%; text-align: center; font-size: 14px; color: var(--ink-soft); }
+  .icon-btn {
+    flex: none;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: 1px solid var(--button-border);
-    background: var(--button-bg);
-    color: var(--button-fg);
+    border: 1px solid var(--line);
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .cards { flex: 1; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-height: 44px; align-items: center; }
+  .cards::-webkit-scrollbar { display: none; }
+  .cards .empty { color: var(--ink-soft); font-style: italic; font-size: 14px; }
+  .card {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 6px;
+    border: 2px solid var(--line);
+    overflow: hidden;
+    background: #000;
+    cursor: default;
+  }
+  .card img { width: 100%; height: 100%; display: block; }
+  .card.used img { filter: grayscale(1); opacity: 0.45; }
+  .card.usable { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-soft); cursor: pointer; }
+  .card.flash { animation: flash 900ms ease 1; }
+  @keyframes flash { 0%, 100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0); } 40% { box-shadow: 0 0 0 6px rgba(255, 215, 90, 0.95); } }
+  .pips { flex: none; display: flex; gap: 4px; }
+  .pip { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--gold); background: transparent; }
+  .pip.on { background: var(--gold); }
+
+  /* ---- Full-screen panels (menu, options, codex, about, victory) ---- */
+  .panel-wrap {
+    position: fixed;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 16px;
+    background: rgba(239, 227, 194, 0.55);
+    z-index: 10;
+  }
+  .panel {
+    font-size: calc(18px * var(--ts));
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 24px 20px;
+  }
+  .panel h1 { margin: 0 0 20px; text-align: center; font-size: 1.9em; font-weight: normal; letter-spacing: 0.5px; }
+  .panel h2 { margin: 0 0 12px; font-size: 1.33em; font-weight: normal; }
+  .panel .sub { text-align: center; color: var(--ink-soft); font-style: italic; margin: 0 0 20px; }
+  .menu-buttons { display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto; }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 0.67em 0.9em;
+    font-size: 1em;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #FFFDF6;
     cursor: pointer;
+    text-align: center;
     touch-action: manipulation;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
   }
-  .arrow:active { transform: scale(0.94); }
-  .arrow:focus-visible { outline: 3px solid #B8860B; outline-offset: 2px; }
-  .arrow svg { width: 24px; height: 24px; }
-  #back { left: calc(16px + env(safe-area-inset-left)); }
-  #forward { right: calc(16px + env(safe-area-inset-right)); }
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
+  .btn:hover:not(:disabled) { background: var(--gold-soft); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .btn.right:disabled, .btn.wrong:disabled { opacity: 1; }
+  .btn.primary { background: var(--gold); border-color: #8C6508; color: #FFFDF6; }
+  .btn.primary:hover:not(:disabled) { background: #9C7209; }
+  .btn.right { background: var(--right-bg); border-color: var(--right); color: var(--right); }
+  .btn.wrong { background: var(--wrong-bg); border-color: var(--wrong); color: var(--wrong); }
+  .btn:focus-visible, .capsule:focus-visible, .card:focus-visible, .icon-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ---- Challenge modal ---- */
+  .modal-wrap {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: calc(92px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(40, 25, 5, 0.18);
+    z-index: 8;
+  }
+  .modal-wrap.top { align-items: flex-start; }
+  .modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: var(--modal-w);
+    max-height: var(--modal-h);
     overflow: hidden;
-    clip: rect(0 0 0 0);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    font-size: calc(18px * var(--ts));
+    line-height: 1.4;
   }
+  .modal-body { overflow: auto; padding: 18px 18px 20px; }
+  /* Saint Challenge: the clues scroll between the birth year and the fixed guess box (spec 6.2). */
+  .modal-body.split { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .modal-body.split > * { flex: none; }
+  /* Prayer arrangement: the whole screen, over the board and the bar, so long prayers fit (spec 8.2). */
+  .modal-wrap.full { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); background: var(--paper); z-index: 10; align-items: stretch; }
+  .modal-wrap.full .modal { max-width: 760px; max-height: none; border: none; border-radius: 0; box-shadow: none; }
+  .modal-wrap.full .modal-body { padding: 10px 14px 16px; }
+  .modal-wrap.full .capsules { gap: 5px; margin-top: 4px; }
+  .modal-wrap.full .capsule { padding: 6px 14px; }
+  .modal-wrap.full .modal h2 { margin-bottom: 6px; }
+  .sheet-head { display: flex; align-items: center; gap: 10px; padding-right: 70px; margin: 0 0 6px; }
+  .sheet-head .kicker { margin: 0; padding-right: 0; }
+  .modal-body.split > .clue-scroll { flex: 1 1 auto; min-height: 3em; overflow: auto; }
+  .modal-wrap.full .modal-body.split { flex: 1 1 auto; }
+  .modal-body.split .guess { margin: 10px 0 0; }
+  .modal-body.split .guess + .btn { margin-top: 10px; }
+  .modal .kicker { font-size: 0.78em; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 6px; padding-right: 70px; }
+  .modal h2 { margin: 0 0 10px; font-size: 1.33em; font-weight: normal; padding-right: 70px; }
+  .modal p { margin: 0 0 12px; }
+  .timer {
+    position: absolute;
+    z-index: 1;
+    top: 14px;
+    right: 14px;
+    min-width: 56px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #FFFDF6;
+    text-align: center;
+    font-size: 1em;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer.low { color: var(--wrong); border-color: var(--wrong); }
+  .feedback { min-height: 1.4em; margin: 10px 0 0; font-style: italic; }
+  .feedback.good { color: var(--right); }
+  .feedback.bad { color: var(--wrong); }
+  .invocation { font-size: 1.22em; font-style: italic; text-align: center; margin: 8px 0 14px; }
+  .answer-note { padding: 10px 12px; border-left: 3px solid var(--gold); background: #FFF8E2; margin: 12px 0; }
+  .clues { margin: 0 0 12px; padding-left: 24px; }
+  .clues li { margin-bottom: 6px; }
+  .clues li.new { animation: fadein 400ms ease; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .guess { display: flex; gap: 8px; margin-bottom: 10px; }
+  .guess input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 1em;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #FFFDF6;
+  }
+  .guess .btn { width: auto; flex: none; }
+  .portrait { display: block; width: 8.9em; height: 8.9em; margin: 6px auto 12px; border-radius: 10px; border: 2px solid var(--line); }
+  .result-name { text-align: center; font-size: 1.33em; margin: 0 0 6px; }
+  .center { text-align: center; }
+  .teaching h3 { font-size: 0.94em; margin: 14px 0 4px; font-weight: bold; }
+  .teaching p { margin: 0; }
+  .teaching a { color: #6B4A06; word-break: break-word; }
+
+  /* ---- Prayer capsules ---- */
+  /* Side margins leave room to scroll with either thumb without grabbing a capsule (spec 8.2). */
+  .capsules { position: relative; display: flex; flex-direction: column; gap: 8px; margin: 6px 24px 12px; }
+  .capsule {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #FFFDF6;
+    text-align: center;
+    font-size: 0.94em;
+    line-height: 1.3;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 150ms ease;
+  }
+  /* A held capsule shudders once, then follows the pointer above the others (spec 8.2). */
+  .capsule.grabbed {
+    position: relative;
+    z-index: 2;
+    cursor: grabbing;
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold), 0 6px 14px rgba(40, 25, 5, 0.25);
+    animation: shudder 320ms ease;
+  }
+  @keyframes shudder {
+    0%, 100% { rotate: 0deg; }
+    15% { rotate: -1.6deg; }
+    35% { rotate: 1.6deg; }
+    55% { rotate: -1.1deg; }
+    75% { rotate: 0.7deg; }
+  }
+  .capsules.over .capsule { cursor: default; }
+  .btn.shudder { animation: shudder 320ms ease; }
+  .drop-line { position: absolute; left: 0; right: 0; height: 3px; border-radius: 2px; background: var(--ink); pointer-events: none; }
+  .capsules.done .capsule { background: var(--right-bg); border-color: var(--right); color: var(--right); }
+
+  /* ---- Codex ---- */
+  .codex-pick {
+    display: block;
+    width: 100%;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--ink);
+    background: #FFFDF6;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .codex-count { color: var(--ink-soft); font-style: italic; margin: 0 0 10px; }
+  .codex-heading { margin: 10px 0 2px; font-size: 1em; font-weight: bold; }
+  .codex-list { display: flex; flex-direction: column; gap: 8px; }
+  .entry { border: 1px solid rgba(184, 155, 102, 0.6); border-radius: 10px; background: #FFFDF6; }
+  .entry > summary { padding: 10px 12px; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; }
+  .entry > summary::-webkit-details-marker { display: none; }
+  .entry .body { padding: 0 12px 12px; }
+  .entry.locked > summary { color: var(--ink-soft); font-style: italic; cursor: default; }
+  .entry img.thumb { width: 40px; height: 40px; border-radius: 6px; flex: none; }
+  .thumb.blank { display: inline-flex; align-items: center; justify-content: center; background: #D9C9A0; color: #FFFDF6; font-size: 20px; }
+  .prayer-text p { margin: 0 0 4px; }
+  .credits li { margin-bottom: 6px; font-size: 0.83em; }
+  .credits a { color: #6B4A06; }
+  .back-row { margin-top: 18px; }
+  .toast {
+    position: fixed;
+    left: 50%;
+    top: 70px;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #FFFDF6;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 16px;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .options label { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
+  .options p { margin: 14px 0 2px; }
+  .options p:first-child { margin-top: 0; }
+
+  /* ---- Title screen (spec 1.3) and version label ---- */
+  .title-screen { position: fixed; inset: 0; z-index: 12; cursor: pointer; }
+  .title-screen p {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0 16px;
+    text-align: center;
+    transform: translateY(-50%);
+    color: rgba(255, 251, 242, 0.95);
+    text-shadow: 0 0 14px rgba(30, 18, 4, 0.85), 0 2px 4px rgba(30, 18, 4, 0.7), 0 0 2px rgba(30, 18, 4, 0.6);
+    transition: opacity 600ms ease;
+  }
+  .title-screen .name { top: 33.333%; font-size: 34px; letter-spacing: 0.5px; }
+  .title-screen .prompt { top: 66.667%; font-size: 20px; font-style: italic; }
+  .title-screen.away p { opacity: 0; }
+  .version {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 2px 12px;
+    border-radius: 999px;
+    background: rgba(251, 245, 230, 0.85);
+    font-size: 14px;
+    color: var(--ink-soft);
+    z-index: 11;
+    pointer-events: none;
+  }
+  .options input { width: 20px; height: 20px; accent-color: var(--gold); }
 </style>
 </head>
 <body>
 <div class="board" id="board">
   <img src="__BOARD_SRC__" alt="">
 </div>
-<button class="arrow" id="back" type="button" aria-label="Back one bead">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-</button>
-<button class="arrow" id="forward" type="button" aria-label="Forward one bead">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-</button>
-<div class="sr-only" id="status" aria-live="polite"></div>
+<div class="hud" id="hud" hidden>
+  <button class="icon-btn" id="menu-btn" type="button" aria-label="Main menu">&#9776;</button>
+  <div class="cards" id="cards" aria-label="Saint cards"></div>
+  <div class="pips" id="pips" aria-label="Streak"></div>
+  <div class="stats" id="stats"></div>
+</div>
+<div class="panel-wrap" id="panel-wrap" hidden><div class="panel" id="panel"></div></div>
+<div class="modal-wrap" id="modal-wrap" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="title-screen" id="title" role="button" tabindex="0" aria-label="Open the main menu">
+  <p class="name">The Way of Life</p>
+  <p class="prompt" id="title-prompt">Click for Main Menu</p>
+</div>
+<div class="version" id="version" hidden>Version __VERSION__</div>
+<script>window.GAME_DATA = __GAME_DATA__;</script>
+<script>window.PORTRAITS = __PORTRAITS__;</script>
 <script>
-  // Bead map generated from rosary_beads.json. x and r are fractions of image width, y of image height.
-  const BEADS = __BEADS_JSON__;
-  const STORAGE_KEY = "wayoflife.rosary.position";
-  const LAST = BEADS.length - 1;
-
-  // Position rules, same as the Android RosaryPosition: circular in both directions, bead 0 always lit.
-  function advance(position) {
-    return position >= LAST ? 0 : position + 1;
-  }
-  function retreat(position) {
-    return position <= 0 ? LAST : position - 1;
-  }
-
-  function loadPosition() {
-    try {
-      const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
-      if (Number.isInteger(saved) && saved >= 0 && saved <= LAST) return saved;
-    } catch (e) {
-      // Storage blocked (private mode or file:// restrictions): start from the beginning.
-    }
-    return 0;
-  }
-  function savePosition(position) {
-    try {
-      localStorage.setItem(STORAGE_KEY, String(position));
-    } catch (e) {
-      // Nothing to do; progress just won't persist in this browser.
-    }
-  }
-
-  const board = document.getElementById("board");
-  const status = document.getElementById("status");
-  const glows = BEADS.map(bead => {
-    const glow = document.createElement("div");
-    glow.className = "glow";
-    glow.style.left = (bead.x * 100) + "%";
-    glow.style.top = (bead.y * 100) + "%";
-    board.appendChild(glow);
-    return glow;
-  });
-
-  let position = loadPosition();
-
-  function render() {
-    glows.forEach((glow, index) => {
-      const isCurrent = index === position;
-      const bead = BEADS[index];
-      // Glow diameter: 1.8x the bead radius on each side, 2.25x for the current bead.
-      glow.style.width = (bead.r * 2 * (isCurrent ? 2.25 : 1.8) * 100) + "%";
-      glow.classList.toggle("lit", index <= position);
-      glow.classList.toggle("current", isCurrent);
-    });
-    status.textContent = "Bead " + (position + 1) + " of " + BEADS.length;
-  }
-
-  function move(next) {
-    position = next;
-    savePosition(position);
-    render();
-  }
-
-  document.getElementById("forward").addEventListener("click", () => move(advance(position)));
-  document.getElementById("back").addEventListener("click", () => move(retreat(position)));
-  document.addEventListener("keydown", event => {
-    if (event.key === "ArrowRight") move(advance(position));
-    else if (event.key === "ArrowLeft") move(retreat(position));
-  });
-
-  render();
+__RULES_JS__
+</script>
+<script>
+__GAME_JS__
 </script>
 </body>
 </html>
