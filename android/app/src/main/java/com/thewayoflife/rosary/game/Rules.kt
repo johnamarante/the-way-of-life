@@ -34,7 +34,13 @@ class GameState(
     var prayersPassed: Int = 0,
     var prayersTried: Int = 0,
     var missedCross: Boolean = false,
+    /** Whether the game ever used Easy prayers, or ever left out the advanced questions (spec 10). */
+    var usedEasyPrayers: Boolean = false,
+    var usedNormalOnly: Boolean = false,
 )
+
+/** Spec 10: what winning a game opens in the Codex. */
+data class CodexUnlocks(val perfect: Boolean, val allSaints: Boolean, val olderDilemmas: Boolean)
 
 enum class GuessResult { IGNORED, ACCEPTED, VAGUE, NONE }
 
@@ -147,11 +153,33 @@ object Rules {
         state.questionsRight == state.questionsAsked && state.prayersPassed == state.prayersTried && !state.missedCross
 
     /**
+     * Spec 10: what winning this game opens in the Codex. Prayers, questions and the all-ages dilemmas are
+     * always open; every saint needs a perfect game on All prayers, and every dilemma for ages 13 and up a
+     * perfect game with advanced questions included, each for the whole game.
+     */
+    fun codexUnlocks(state: GameState): CodexUnlocks {
+        val perfect = isPerfect(state)
+        return CodexUnlocks(perfect, allSaints = perfect && !state.usedEasyPrayers, olderDilemmas = perfect && !state.usedNormalOnly)
+    }
+
+    /** The victory screen's words about the Codex. */
+    fun codexMessages(unlocks: CodexUnlocks): List<String> =
+        if (!unlocks.perfect) {
+            listOf("Get every catechism question, Prayer Challenge and the choice at the Cross right in one game to open more of the Codex: with All prayers, every saint; with advanced questions included, every moral dilemma for ages 13 and up.")
+        } else {
+            listOf(
+                if (unlocks.allSaints) "Every saint is now open in the Codex." else "To open every saint in the Codex, win a perfect game with All prayers for the whole game.",
+                if (unlocks.olderDilemmas) "Every moral dilemma for ages 13 and up is now open in the Codex." else "To open every moral dilemma for ages 13 and up, win a perfect game with advanced questions included for the whole game.",
+            )
+        }
+
+    /**
      * Draws the next catechism question without repeats, reshuffling when the bank is used up (spec 4.1).
      * The deck holds every question; advanced ones are skipped unless the option includes them (spec 11.2).
      * A deck saved before the question bank changed size is replaced.
      */
     fun drawQuestion(state: GameState, data: GameData, advanced: Boolean, random: Random): Int {
+        if (!advanced) state.usedNormalOnly = true
         val includeAdvanced = advanced || data.questions.all { it.advanced }
         while (true) {
             if (state.qPos >= state.qDeck.size || state.qDeck.size != data.questions.size) {
@@ -175,6 +203,7 @@ object Rules {
      * not marked easy are skipped.
      */
     fun drawPrayer(state: GameState, data: GameData, easyOnly: Boolean, random: Random): Int {
+        if (easyOnly) state.usedEasyPrayers = true
         val easy = easyOnly && data.prayers.any { it.easy }
         fun eligible(i: Int) = !easy || data.prayers[i].easy
         while (true) {

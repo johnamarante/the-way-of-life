@@ -71,10 +71,14 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     var hasSave by mutableStateOf(store.loadGame() != null)
         private set
 
-    /** The finished game's score for the victory screen, and whether it opened the whole Codex (spec 9.4). */
+    /** The finished game's score for the victory screen, and whether it was perfect (spec 9.4). */
     var victoryScore by mutableStateOf("")
         private set
     var victoryPerfect by mutableStateOf(false)
+        private set
+
+    /** What the win opened in the Codex, or what would (spec 10). */
+    var victoryCodex by mutableStateOf<List<String>>(emptyList())
         private set
 
     /** False while the app is in the background; timers only count while it is true (spec 12). */
@@ -300,10 +304,14 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun victory() {
         val g = game ?: return
-        victoryPerfect = Rules.isPerfect(g)
+        val unlocks = Rules.codexUnlocks(g)
+        victoryPerfect = unlocks.perfect
+        victoryCodex = Rules.codexMessages(unlocks)
         victoryScore = scoreText(g)
         codex.beaten = true
-        if (victoryPerfect) codex.complete = true
+        if (unlocks.perfect) codex.complete = true
+        if (unlocks.allSaints) codex.allSaints = true
+        if (unlocks.olderDilemmas) codex.olderDilemmas = true
         saveCodex()
         store.saveGame(null)
         hasSave = false

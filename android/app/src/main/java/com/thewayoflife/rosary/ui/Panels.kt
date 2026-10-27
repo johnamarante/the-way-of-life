@@ -60,7 +60,8 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thewayoflife.rosary.BuildConfig
-import com.thewayoflife.rosary.data.Question
+import com.thewayoflife.rosary.data.Dilemma
+import com.thewayoflife.rosary.data.Saint
 import com.thewayoflife.rosary.game.ModalSize
 import com.thewayoflife.rosary.game.TextSize
 import java.text.Collator
@@ -249,11 +250,8 @@ fun VictoryPanel(vm: GameViewModel) = Panel {
         textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
     )
     Text(vm.victoryScore, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-    Text(
-        if (vm.victoryPerfect) "You made no mistakes along the way, so the whole Codex is now open to you."
-        else "Get every catechism question, Prayer Challenge and the choice at the Cross right in one game to open the whole Codex.",
-        textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
-    )
+    if (vm.victoryPerfect) Text("You made no mistakes along the way.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    vm.victoryCodex.forEach { Text(it, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
     Text("Ave Maria", fontStyle = FontStyle.Italic, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     GameButton("Main Menu", { vm.show(Screen.MENU) }, style = ButtonStyle.PRIMARY)
 }
@@ -268,9 +266,12 @@ private enum class CodexTab(val label: String) { PRAYERS("Prayers"), SAINTS("Sai
 fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
     @Suppress("UNUSED_VARIABLE") val version = vm.codexVersion
     var tab by rememberSaveable { mutableStateOf(CodexTab.PRAYERS) }
+    // Prayers, questions and the all-ages dilemmas are always open, for learning; saints open as they are won,
+    // and the rest with the victories in spec 10.
     val codex = vm.codex
-    val all = codex.complete
     val data = vm.data
+    fun saintOpen(s: Saint) = codex.allSaints || s.name in codex.saints
+    fun dilemmaOpen(d: Dilemma) = d.allAges || codex.olderDilemmas || d.id in codex.dilemmas
     // Saints in alphabetical order, without the "St." every entry would otherwise start with (spec 10).
     val saintsByName = remember(data) {
         val collator = Collator.getInstance(Locale.ENGLISH).apply { strength = Collator.PRIMARY }
@@ -295,13 +296,9 @@ fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
     }
     val count = when (tab) {
         CodexTab.PRAYERS -> null
-        CodexTab.SAINTS -> "${data.saints.count { all || it.name in codex.saints }} of ${data.saints.size} saints"
-        CodexTab.QUESTIONS -> {
-            val (advanced, normal) = data.questions.partition { it.advanced }
-            fun known(qs: List<Question>) = qs.count { all || it.id in codex.questions }
-            "${known(normal)} of ${normal.size} questions, ${known(advanced)} of ${advanced.size} advanced questions"
-        }
-        CodexTab.DILEMMAS -> "${data.dilemmas.count { all || it.id in codex.dilemmas }} of ${data.dilemmas.size} dilemmas"
+        CodexTab.SAINTS -> "${data.saints.count(::saintOpen)} of ${data.saints.size} saints"
+        CodexTab.QUESTIONS -> "${data.questions.count { !it.advanced }} questions, ${data.questions.count { it.advanced }} advanced questions"
+        CodexTab.DILEMMAS -> "${data.dilemmas.count(::dilemmaOpen)} of ${data.dilemmas.size} dilemmas"
     }
     if (count != null) Text(count, fontStyle = FontStyle.Italic, color = Palette.inkSoft)
     LazyColumn(Modifier.weight(1f, fill = false).padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -315,7 +312,7 @@ fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
                 }
             }
             CodexTab.SAINTS -> itemsIndexed(saintsByName) { _, s ->
-                val open = all || s.name in codex.saints
+                val open = saintOpen(s)
                 Entry(open = open, title = if (open) codexName(s.name) else "Locked saint", portrait = s.portrait.takeIf { open }) {
                     if (s.year.isNotEmpty()) Text("Born: ${s.year}", fontStyle = FontStyle.Italic)
                     s.clues.forEachIndexed { i, clue -> Text("${i + 1}. $clue") }
@@ -323,18 +320,12 @@ fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
             }
             CodexTab.QUESTIONS -> {
                 val (advanced, normal) = data.questions.partition { it.advanced }
-                itemsIndexed(normal) { _, q ->
-                    val open = all || q.id in codex.questions
-                    Entry(open = open, title = if (open) q.question else "Question ${q.id} (locked)") { Text(q.answer) }
-                }
+                itemsIndexed(normal) { _, q -> Entry(open = true, title = q.question) { Text(q.answer) } }
                 if (advanced.isNotEmpty()) item { Text("Advanced questions", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
-                itemsIndexed(advanced) { _, q ->
-                    val open = all || q.id in codex.questions
-                    Entry(open = open, title = if (open) q.question else "Advanced question ${q.id - 1000} (locked)") { Text(q.answer) }
-                }
+                itemsIndexed(advanced) { _, q -> Entry(open = true, title = q.question) { Text(q.answer) } }
             }
             CodexTab.DILEMMAS -> itemsIndexed(data.dilemmas) { _, d ->
-                val open = all || d.id in codex.dilemmas
+                val open = dilemmaOpen(d)
                 Entry(open = open, title = if (open) d.title else "Locked dilemma") {
                     Text(d.dilemma)
                     Text(d.question, fontWeight = FontWeight.Bold)

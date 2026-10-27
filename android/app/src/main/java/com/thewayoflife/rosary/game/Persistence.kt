@@ -6,7 +6,8 @@ import org.json.JSONObject
 
 /**
  * Codex progress (spec 10): persists across games, separate from the save slot. [beaten] means won at
- * least once; [complete] means won a perfect game, which opens the whole Codex.
+ * least once; [complete] means won a perfect game. [allSaints] and [olderDilemmas] are opened by a perfect
+ * game on All prayers / with advanced questions. Prayers, questions and the all-ages dilemmas are always open.
  */
 class Codex(
     val saints: MutableSet<String> = mutableSetOf(),
@@ -14,6 +15,8 @@ class Codex(
     val dilemmas: MutableSet<Int> = mutableSetOf(),
     var beaten: Boolean = false,
     var complete: Boolean = false,
+    var allSaints: Boolean = false,
+    var olderDilemmas: Boolean = false,
 )
 
 /** Text size for panels and challenges (spec 11.2), as a multiple of the normal size. */
@@ -44,7 +47,7 @@ class GameStore(context: Context) {
     }
 
     fun loadGame(): GameState? = preferences.getString(KEY_SAVE, null)?.let { raw ->
-        runCatching { gameFromJson(JSONObject(raw)) }.getOrNull()
+        runCatching { gameFromJson(JSONObject(raw), loadOptions()) }.getOrNull()
     }
 
     fun saveGame(state: GameState?) {
@@ -62,6 +65,9 @@ class GameStore(context: Context) {
                 dilemmas = o.getJSONArray("dilemmas").ints().toMutableSet(),
                 beaten = o.optBoolean("beaten"),
                 complete = o.optBoolean("complete"),
+                // A Codex from before 0.2.2 that a perfect game had fully opened keeps both.
+                allSaints = o.optBoolean("allSaints", o.optBoolean("complete")),
+                olderDilemmas = o.optBoolean("olderDilemmas", o.optBoolean("complete")),
             )
         }.getOrNull()
     } ?: Codex()
@@ -73,6 +79,8 @@ class GameStore(context: Context) {
             .put("dilemmas", JSONArray(codex.dilemmas.toList()))
             .put("beaten", codex.beaten)
             .put("complete", codex.complete)
+            .put("allSaints", codex.allSaints)
+            .put("olderDilemmas", codex.olderDilemmas)
         preferences.edit().putString(KEY_CODEX, o.toString()).apply()
     }
 
@@ -123,8 +131,11 @@ class GameStore(context: Context) {
             .put("prayersPassed", s.prayersPassed)
             .put("prayersTried", s.prayersTried)
             .put("missedCross", s.missedCross)
+            .put("usedEasyPrayers", s.usedEasyPrayers)
+            .put("usedNormalOnly", s.usedNormalOnly)
 
-        fun gameFromJson(o: JSONObject): GameState? {
+        /** A game saved before 0.2.2 is taken to have used the current options all along. */
+        fun gameFromJson(o: JSONObject, options: Options = Options()): GameState? {
             if (o.optInt("v") != SAVE_VERSION) return null
             return GameState(
                 position = o.getInt("position"),
@@ -145,6 +156,8 @@ class GameStore(context: Context) {
                 prayersPassed = o.optInt("prayersPassed"),
                 prayersTried = o.optInt("prayersTried"),
                 missedCross = o.optBoolean("missedCross"),
+                usedEasyPrayers = o.optBoolean("usedEasyPrayers", options.easyPrayers),
+                usedNormalOnly = o.optBoolean("usedNormalOnly", !options.advancedQuestions),
             )
         }
 

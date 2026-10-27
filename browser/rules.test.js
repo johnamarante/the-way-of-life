@@ -178,6 +178,27 @@ test("prayer deck: every prayer once per pass, no repeat across a reshuffle, eas
   assert.strictEqual(first, u.pDeck[0], "the order is fixed at the start of the game");
 });
 
+test("codex unlocks: saints need All prayers, older dilemmas need advanced questions, both need a perfect game", () => {
+  const s = R.newGame(data, rng);
+  R.drawPrayer(s, data, false, rng);
+  R.drawQuestion(s, data, true, rng);
+  assert.deepStrictEqual(R.codexUnlocks(s), { perfect: true, allSaints: true, olderDilemmas: true });
+  const easy = R.newGame(data, rng);
+  R.drawQuestion(easy, data, true, rng);
+  R.drawPrayer(easy, data, true, rng); // Easy prayers once is enough to rule out the saints
+  R.drawPrayer(easy, data, false, rng);
+  assert.deepStrictEqual(R.codexUnlocks(easy), { perfect: true, allSaints: false, olderDilemmas: true });
+  const normal = R.newGame(data, rng);
+  R.drawQuestion(normal, data, true, rng);
+  R.drawQuestion(normal, data, false, rng); // so is one question drawn without the advanced set
+  assert.deepStrictEqual(R.codexUnlocks(normal), { perfect: true, allSaints: true, olderDilemmas: false });
+  const missed = R.newGame(data, rng);
+  R.answerWrong(missed);
+  assert.deepStrictEqual(R.codexUnlocks(missed), { perfect: false, allSaints: false, olderDilemmas: false });
+  assert.strictEqual(R.codexMessages(R.codexUnlocks(missed)).length, 1);
+  assert.strictEqual(R.codexMessages(R.codexUnlocks(s)).length, 2);
+});
+
 test("pickSaint never offers a held saint", () => {
   const s = R.newGame(data, rng);
   data.saints.slice(1).forEach(x => R.winSaint(s, x.name));

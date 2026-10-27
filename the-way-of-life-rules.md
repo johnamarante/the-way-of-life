@@ -134,7 +134,7 @@ The in-game bar shows the player's score for this game under the saint cards:
 - **Questions:** `n` catechism questions answered correctly out of `m` answered. A wrong answer adds to `m` only. A question passed with a saint card counts toward neither number. A question left open by going back to the menu is not counted.
 - **Prayer challenge:** `x` Prayer Challenges completed out of `y` attempted on the Glory beads. Running out of time adds to `y` only. The penance prayer is not counted.
 - The score is saved with the game, along with whether the player has chosen wrongly at the Cross in this game.
-- A perfect game has every question and every Prayer Challenge right (`n = m` and `x = y`) and no wrong choice at the Cross. Winning a perfect game opens the whole Codex (Section 10).
+- A perfect game has every question and every Prayer Challenge right (`n = m` and `x = y`) and no wrong choice at the Cross. Winning a perfect game can open more of the Codex (Section 10).
 
 ---
 
@@ -406,7 +406,7 @@ Compute the time from the data rather than hard-coding this table, so edits to t
 
 - Show a victory screen with the game's score (Section 3.1).
 - Mark the game as beaten at least once.
-- If it was a perfect game, say so and unlock the full Codex (Section 10). Otherwise, tell the player that getting every catechism question, every Prayer Challenge and the choice at the Cross right in one game opens the whole Codex.
+- Open what the win earns in the Codex (Section 10) and say so. After a perfect game, say which parts opened and, for any that did not, what would open them (All prayers for the whole game for the saints; advanced questions for the whole game for the dilemmas for ages 13 and up). After a game that was not perfect, explain that a perfect game with those settings opens them.
 - Clear the save file.
 - Return to the main menu.
 
@@ -416,12 +416,14 @@ Compute the time from the data rather than hard-coding this table, so edits to t
 
 Opened from the main menu. A library of the game's content, one section at a time. The section is picked from a drop-down list at the top (Prayers, Saints, Questions, Dilemmas; one at a time), which replaced the four section buttons whose labels wrapped.
 
-- **Prayers:** always fully available, showing each prayer in English and Latin.
-- **Saints:** shows each saint the player has won a card for in a Saint Challenge in any game (name, portrait, birth year, all 10 clues). Locked saints show as a placeholder. Saints are listed alphabetically by name, without the "St." in front (so "Augustine of Hippo," not "St. Augustine of Hippo"). "The Blessed Virgin Mary" keeps her title and is sorted under B.
-- **Questions:** shows each catechism question the player has answered correctly or passed with a saint card in any game, with its answer. The normal questions come first, then the advanced questions under their own heading. Separate counts are shown for each set.
-- **Moral Dilemmas:** shows each dilemma the player has answered correctly in any game, with its full teaching and links.
-- Every entry in every section is unlocked only after the player wins a perfect game: every catechism question, every Prayer Challenge and the choice at the Cross right in that game (Section 3.1). Winning after any missed question, missed Prayer Challenge or wrong choice at the Cross (and the penance that follows) does not unlock the rest.
-- Stored separately: "beaten" (won at least once) and "complete" (won a perfect game). Only "complete" unlocks everything, so a Codex marked beaten by version 0.0.1 is not fully unlocked.
+The Codex exists to help players learn, not to hold content back, so everything a player needs for learning is open from the very first game. Only the saints and the dilemmas for older players are earned.
+
+- **Prayers:** always open, showing each prayer in English and Latin.
+- **Saints:** shows each saint the player has won a card for in a Saint Challenge in any game (name, portrait, birth year, all 10 clues). Locked saints show as a placeholder. **Every** saint opens after the player wins a perfect game (Section 3.1) with Prayers set to **All prayers** for the whole game; a single prayer drawn with Easy prayers on rules that game out. Saints are listed alphabetically by name, without the "St." in front (so "Augustine of Hippo," not "St. Augustine of Hippo"). "The Blessed Virgin Mary" keeps her title and is sorted under B.
+- **Questions:** every catechism question, normal and advanced, is always open with its answer. The normal questions come first, then the advanced questions under their own heading, with a count for each set.
+- **Moral Dilemmas:** the All Ages dilemmas are always open, with their full teaching and links, so parents can read what younger players will see. A dilemma for ages 13 and up shows once the player has answered it correctly in any game. **Every** dilemma for ages 13 and up opens after the player wins a perfect game with **advanced questions included** for the whole game; a single question drawn with "Normal questions only" rules that game out.
+- The game records, in the saved game, whether Easy prayers or "Normal questions only" were used at any point. A game saved before version 0.2.2 is taken to have used the options as they are when it is loaded.
+- Stored separately: "beaten" (won at least once), "complete" (won a perfect game), "all saints" and "older dilemmas". A Codex that a perfect game had fully opened before version 0.2.2 keeps every saint and every dilemma open.
 - Codex progress persists across games and app restarts. It is separate from the in-game card hand, which resets every game.
 
 ---
@@ -430,7 +432,7 @@ Opened from the main menu. A library of the game's content, one section at a tim
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 0.2.1") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 0.2.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.

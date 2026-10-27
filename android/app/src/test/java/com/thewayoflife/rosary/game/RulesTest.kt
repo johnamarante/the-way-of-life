@@ -198,6 +198,28 @@ class RulesTest {
     }
 
     @Test
+    fun `codex unlocks need a perfect game, saints on All prayers, older dilemmas with advanced questions`() {
+        val s = Rules.newGame(data, random)
+        Rules.drawPrayer(s, data, easyOnly = false, random = random)
+        Rules.drawQuestion(s, data, advanced = true, random = random)
+        assertEquals(CodexUnlocks(perfect = true, allSaints = true, olderDilemmas = true), Rules.codexUnlocks(s))
+        val easy = Rules.newGame(data, random)
+        Rules.drawQuestion(easy, data, advanced = true, random = random)
+        Rules.drawPrayer(easy, data, easyOnly = true, random = random) // Easy prayers once rules out the saints
+        Rules.drawPrayer(easy, data, easyOnly = false, random = random)
+        assertEquals(CodexUnlocks(perfect = true, allSaints = false, olderDilemmas = true), Rules.codexUnlocks(easy))
+        val normal = Rules.newGame(data, random)
+        Rules.drawQuestion(normal, data, advanced = true, random = random)
+        Rules.drawQuestion(normal, data, advanced = false, random = random) // so does one question without the advanced set
+        assertEquals(CodexUnlocks(perfect = true, allSaints = true, olderDilemmas = false), Rules.codexUnlocks(normal))
+        val missed = Rules.newGame(data, random)
+        Rules.answerWrong(missed)
+        assertEquals(CodexUnlocks(perfect = false, allSaints = false, olderDilemmas = false), Rules.codexUnlocks(missed))
+        assertEquals(1, Rules.codexMessages(Rules.codexUnlocks(missed)).size)
+        assertEquals(2, Rules.codexMessages(Rules.codexUnlocks(s)).size)
+    }
+
+    @Test
     fun `a saint already held is never offered`() {
         val s = Rules.newGame(data, random)
         data.saints.drop(1).forEach { Rules.winSaint(s, it.name) }

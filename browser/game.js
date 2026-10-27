@@ -34,8 +34,14 @@
   }
 
   let state = null;
-  // `beaten`: won at least once. `complete`: won a perfect game, which opens the whole Codex (spec 10).
-  let codex = Object.assign({ saints: [], questions: [], dilemmas: [], beaten: false, complete: false }, load(KEYS.codex, {}));
+  // `beaten`: won at least once. `complete`: won a perfect game. `allSaints` and `olderDilemmas`: opened
+  // by a perfect game on All prayers / with advanced questions (spec 10). A Codex from before 0.2.2 that a
+  // perfect game had fully opened keeps both.
+  let codex = (() => {
+    const saved = load(KEYS.codex, {});
+    const opened = !!saved.complete;
+    return Object.assign({ saints: [], questions: [], dilemmas: [], beaten: false, complete: false, allSaints: opened, olderDilemmas: opened }, saved);
+  })();
   let options = Object.assign({ includeOlder: false, easyPrayers: false, advancedQuestions: false, textSize: "small", modalSize: "compact" }, load(KEYS.options, {}));
   store("wayoflife.rosary.position", null); // left over from the bead-lighting prototype
 
@@ -43,7 +49,8 @@
   function savedGame() {
     const s = load(KEYS.save, null);
     // Saves from before the score was kept start it at 0/0.
-    return s && s.v === SAVE_VERSION ? Object.assign({ questionsRight: 0, questionsAsked: 0, prayersPassed: 0, prayersTried: 0, missedCross: false, pDeck: [], pPos: 0 }, s) : null;
+    return s && s.v === SAVE_VERSION ? Object.assign({ questionsRight: 0, questionsAsked: 0, prayersPassed: 0, prayersTried: 0, missedCross: false, pDeck: [], pPos: 0,
+      usedEasyPrayers: options.easyPrayers, usedNormalOnly: !options.advancedQuestions }, s) : null;
   }
   function addToCodex(list, value) {
     if (!codex[list].includes(value)) {
@@ -775,10 +782,12 @@
   }
   function victory() {
     closeModal();
-    const perfect = R.isPerfect(state);
+    const unlocks = R.codexUnlocks(state);
     const score = scoreText(state);
     codex.beaten = true;
-    if (perfect) codex.complete = true;
+    if (unlocks.perfect) codex.complete = true;
+    if (unlocks.allSaints) codex.allSaints = true;
+    if (unlocks.olderDilemmas) codex.olderDilemmas = true;
     store(KEYS.codex, codex);
     store(KEYS.save, null);
     state = null;
@@ -789,9 +798,8 @@
       el("p", { class: "sub" }, "You have reached the Cross."),
       el("p", { class: "center" }, "Through prayer, the help of the saints, and the teaching of the Church, you have climbed the way of life."),
       el("p", { class: "center" }, score),
-      el("p", { class: "center" }, perfect
-        ? "You made no mistakes along the way, so the whole Codex is now open to you."
-        : "Get every catechism question, Prayer Challenge and the choice at the Cross right in one game to open the whole Codex."),
+      unlocks.perfect ? el("p", { class: "center" }, "You made no mistakes along the way.") : null,
+      ...R.codexMessages(unlocks).map(text => el("p", { class: "center" }, text)),
       el("p", { class: "center" }, el("em", {}, "Ave Maria")),
       el("div", { class: "menu-buttons back-row" }, button("Main Menu", showMenu, "primary")));
   }
@@ -891,8 +899,9 @@
       el("div", { class: "back-row" }, button("Back", showMenu)));
   }
 
+  // Prayers, questions and the all-ages dilemmas are always open, for learning; saints open as they are
+  // won, and the rest with the victories in spec 10.
   function showCodex(tab) {
-    const all = codex.complete;
     const tabs = [["prayers", "Prayers"], ["saints", "Saints"], ["questions", "Questions"], ["dilemmas", "Dilemmas"]];
     const tabRow = el("select", { class: "codex-pick", "aria-label": "Codex section", onchange: e => showCodex(e.target.value) },
       tabs.map(([key, label]) => el("option", { value: key, selected: key === tab }, label)));
@@ -908,14 +917,15 @@
           el("h3", {}, "English"), p.english.segments.map(s => el("p", {}, s)),
           el("h3", {}, "Latin: " + p.latin.title), p.latin.segments.map(s => el("p", {}, s))))));
     } else if (tab === "saints") {
-      const known = DATA.saints.filter(s => all || codex.saints.includes(s.name)).length;
+      const isOpen = s => codex.allSaints || codex.saints.includes(s.name);
+      const known = DATA.saints.filter(isOpen).length;
       count = `${known} of ${DATA.saints.length} saints`;
       // Alphabetical by name, without the "St." every entry would otherwise start with (spec 10).
       const shortName = name => name.replace(/^St\. /, "");
       const sortKey = name => shortName(name).replace(/^The /, "");
       const sorted = [...DATA.saints].sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name), "en", { sensitivity: "base" }));
       sorted.forEach(s => {
-        const open = all || codex.saints.includes(s.name);
+        const open = isOpen(s);
         list.append(entry(open,
           [open ? el("img", { class: "thumb", src: PORTRAITS[s.portrait], alt: "" }) : el("span", { class: "thumb blank" }, "?"),
             open ? shortName(s.name) : "Locked saint"],
@@ -924,22 +934,18 @@
             el("ol", { class: "clues" }, s.clues.map(c => el("li", {}, c))))));
       });
     } else if (tab === "questions") {
-      const known = qs => qs.filter(q => all || codex.questions.includes(q.id)).length;
       const normal = DATA.questions.filter(q => !q.advanced);
       const advanced = DATA.questions.filter(q => q.advanced);
-      count = `${known(normal)} of ${normal.length} questions, ${known(advanced)} of ${advanced.length} advanced questions`;
-      const show = (q, label) => {
-        const open = all || codex.questions.includes(q.id);
-        list.append(entry(open, open ? q.question : `${label} (locked)`, el("p", {}, q.answer)));
-      };
-      normal.forEach(q => show(q, `Question ${q.id}`));
+      count = `${normal.length} questions, ${advanced.length} advanced questions`;
+      const show = q => list.append(entry(true, q.question, el("p", {}, q.answer)));
+      normal.forEach(show);
       if (advanced.length) list.append(el("h3", { class: "codex-heading" }, "Advanced questions"));
-      advanced.forEach(q => show(q, `Advanced question ${q.id - 1000}`));
+      advanced.forEach(show);
     } else {
-      const known = DATA.dilemmas.filter(d => all || codex.dilemmas.includes(d.id)).length;
-      count = `${known} of ${DATA.dilemmas.length} dilemmas`;
+      const isOpen = d => d.allAges || codex.olderDilemmas || codex.dilemmas.includes(d.id);
+      count = `${DATA.dilemmas.filter(isOpen).length} of ${DATA.dilemmas.length} dilemmas`;
       DATA.dilemmas.forEach(d => {
-        const open = all || codex.dilemmas.includes(d.id);
+        const open = isOpen(d);
         list.append(entry(open, open ? d.title : "Locked dilemma",
           el("div", {}, el("p", {}, d.dilemma), el("p", {}, el("strong", {}, d.question)),
             el("p", {}, el("em", {}, "Right choice: "), d.right), teaching(d))));

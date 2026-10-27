@@ -130,6 +130,9 @@
       prayersPassed: 0,
       prayersTried: 0,
       missedCross: false,
+      // Whether the game ever used Easy prayers, or ever left out the advanced questions (spec 10).
+      usedEasyPrayers: false,
+      usedNormalOnly: false,
     };
   }
 
@@ -139,10 +142,28 @@
     return state.questionsRight === state.questionsAsked && state.prayersPassed === state.prayersTried && !state.missedCross;
   }
 
+  // Spec 10: what winning this game opens in the Codex. Prayers, questions and the all-ages dilemmas are
+  // always open; every saint needs a perfect game on All prayers, and every dilemma for ages 13 and up a
+  // perfect game with advanced questions included, each for the whole game.
+  function codexUnlocks(state) {
+    const perfect = isPerfect(state);
+    return { perfect, allSaints: perfect && !state.usedEasyPrayers, olderDilemmas: perfect && !state.usedNormalOnly };
+  }
+
+  // The victory screen's words about the Codex.
+  function codexMessages(unlocks) {
+    if (!unlocks.perfect) return ['Get every catechism question, Prayer Challenge and the choice at the Cross right in one game to open more of the Codex: with All prayers, every saint; with advanced questions included, every moral dilemma for ages 13 and up.'];
+    return [
+      unlocks.allSaints ? 'Every saint is now open in the Codex.' : 'To open every saint in the Codex, win a perfect game with All prayers for the whole game.',
+      unlocks.olderDilemmas ? 'Every moral dilemma for ages 13 and up is now open in the Codex.' : 'To open every moral dilemma for ages 13 and up, win a perfect game with advanced questions included for the whole game.',
+    ];
+  }
+
   // Draws the next catechism question without repeats, reshuffling when the bank is used up (spec 4.1).
   // The deck holds every question; advanced ones are skipped unless the option includes them (spec 11.2).
   // A deck saved before the question bank changed size is replaced.
   function drawQuestion(state, data, advanced, rng) {
+    if (!advanced) state.usedNormalOnly = true;
     if (!data.questions.some(q => !q.advanced)) advanced = true;
     for (;;) {
       if (state.qPos >= state.qDeck.length || state.qDeck.length !== data.questions.length) {
@@ -166,6 +187,7 @@
   // it is reshuffled, never starting with the prayer drawn last. With Easy prayers on (spec 11.2), prayers
   // not marked easy are skipped.
   function drawPrayer(state, data, easyOnly, rng) {
+    if (easyOnly) state.usedEasyPrayers = true;
     if (!data.prayers.some(p => p.easy)) easyOnly = false;
     const eligible = i => !easyOnly || data.prayers[i].easy;
     for (;;) {
@@ -274,7 +296,7 @@
     BEAD_COUNT, CROSS, SAINT_SECONDS, STREAK_FOR_SAINT,
     decadeOf, isGlory, gloryDestination, prayerSeconds, shuffle, scramble, isInOrder,
     normalize, withinOneEdit, judgeGuess,
-    newGame, isPerfect, drawQuestion, pickSaint, drawPrayer, pickDilemma, moveTo, challengeForPosition,
+    newGame, isPerfect, codexUnlocks, codexMessages, drawQuestion, pickSaint, drawPrayer, pickDilemma, moveTo, challengeForPosition,
     answerCorrect, answerWrong, useCard, winSaint, completeGloryPrayer, prayerMissed, startPenance, finishPenance,
   };
 
