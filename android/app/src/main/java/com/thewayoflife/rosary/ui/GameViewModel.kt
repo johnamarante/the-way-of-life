@@ -24,6 +24,7 @@ enum class Screen { TITLE, MENU, CONFIRM_NEW_GAME, GAME, OPTIONS, CODEX, ABOUT, 
 class GameViewModel(app: Application) : AndroidViewModel(app) {
     val data: GameData = GameData.parse(app.assets.open("game-data.json").bufferedReader().use { it.readText() })
     private val store = GameStore(app)
+    val sounds = Sounds(app)
     private val random = Random.Default
 
     /** The app opens on the title screen, the only time the whole board is in view (spec 1.3). */
@@ -91,6 +92,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     // ---- Menu ----
 
     fun show(target: Screen) {
+        if (screen == Screen.VICTORY) sounds.stopAll() // the victory music ends with the victory screen
         if (target == Screen.MENU) showBoardFor(store.loadGame())
         screen = target
     }
@@ -209,6 +211,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     fun saintWon(saintIndex: Int) {
         val g = game ?: return
+        sounds.play(Sound.CHALLENGE_PASSED)
         val name = data.saints[saintIndex].name
         Rules.winSaint(g, name)
         codex.saints.add(name)
@@ -230,6 +233,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun gloryPrayerCompleted(latin: Boolean) {
         val g = game ?: return
+        sounds.play(Sound.CHALLENGE_PASSED)
         prayerMove = Rules.completeGloryPrayer(g, latin)
         g.challenge = null
         save()
@@ -304,6 +308,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun victory() {
         val g = game ?: return
+        sounds.play(Sound.VICTORY)
         val unlocks = Rules.codexUnlocks(g)
         victoryPerfect = unlocks.perfect
         victoryCodex = Rules.codexMessages(unlocks)
@@ -354,5 +359,9 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     private companion object {
         const val FALL_STEP_MS = 30L
+    }
+
+    override fun onCleared() {
+        sounds.stopAll()
     }
 }

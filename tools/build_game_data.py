@@ -195,6 +195,11 @@ def main():
     portraits.mkdir(exist_ok=True)
     for saint in data["saints"]:
         shutil.copyfile(ROOT / "portraits" / saint["portrait"], portraits / saint["portrait"])
+    # Sound effects (spec 13): the file name says when each one plays.
+    sounds = ANDROID_ASSETS / "sounds"
+    sounds.mkdir(exist_ok=True)
+    for sound in sorted((ROOT / "sounds").glob("*.mp3")):
+        shutil.copyfile(sound, sounds / sound.name)
     print(f"Wrote game-data.json: {len(data['questions'])} questions, {len(data['saints'])} saints, "
           f"{len(data['prayers'])} prayers, {len(data['dilemmas'])} dilemmas, {len(data['credits'])} credits; "
           f"copied {len(data['saints'])} portraits.")

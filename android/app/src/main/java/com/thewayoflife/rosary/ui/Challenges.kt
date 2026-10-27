@@ -415,6 +415,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
             GameButton(text, onClick = {
                 picked = text
                 vm.cardsUsable = false
+                vm.sounds.play(if (text == q.correct) Sound.QUESTION_RIGHT else Sound.QUESTION_WRONG)
                 if (text != q.correct) vm.answeredWrongly()
             }, style = style, enabled = !answered)
         }
@@ -760,8 +761,12 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
                     }, modifier = Modifier.weight(1f))
                     if (penance) {
                         GameButton("Submit", {
-                            if (Rules.isInOrder(order, prayer.segments)) state = PrayerState.PASSED
-                            else feedback = "Not quite, keep trying."
+                            if (Rules.isInOrder(order, prayer.segments)) {
+                                vm.sounds.play(Sound.PENANCE_COMPLETE)
+                                state = PrayerState.PASSED
+                            } else {
+                                feedback = "Not quite, keep trying."
+                            }
                         }, modifier = Modifier.weight(1f), style = ButtonStyle.PRIMARY)
                     }
                 }

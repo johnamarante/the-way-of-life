@@ -6,6 +6,7 @@
   const R = window.Rules;
   const DATA = window.GAME_DATA;
   const PORTRAITS = window.PORTRAITS;
+  const SOUNDS = window.SOUNDS || {};
   const rng = Math.random;
 
   const KEYS = { save: "wayoflife.save", codex: "wayoflife.codex", options: "wayoflife.options" };
@@ -156,6 +157,13 @@
     update();
   }
   trackVisibleArea();
+  // Plays a sound effect once (spec 13). Every sound follows a tap or click, which browsers require.
+  function playSound(name) {
+    if (!SOUNDS[name]) return null;
+    const audio = new Audio(SOUNDS[name]);
+    audio.play().catch(() => {});
+    return audio;
+  }
   // Scrolls a button that just appeared at the end of a challenge into view (small screens).
   function reveal(node) {
     requestAnimationFrame(() => node.scrollIntoView({ block: "nearest", behavior: "smooth" }));
@@ -371,6 +379,7 @@
       const right = buttons[choices.indexOf(q.correct)];
       if (text === q.correct) {
         right.classList.add("right");
+        playSound("question_answered_correctly");
         feedback.textContent = "Correct!";
         feedback.className = "feedback good";
         addToCodex("questions", q.id);
@@ -388,6 +397,7 @@
         right.classList.add("right");
         feedback.textContent = "Not quite.";
         feedback.className = "feedback bad";
+        playSound("question_wrong");
         const next = button("Next", () => {
           state.challenge = { kind: "question", q: R.drawQuestion(state, DATA, options.advancedQuestions, rng) };
           saveGame();
@@ -483,6 +493,7 @@
       over = true;
       stopTimer(timer);
       if (won) {
+        playSound("passed_challenge");
         R.winSaint(state, saint.name);
         addToCodex("saints", saint.name);
         saveGame();
@@ -651,6 +662,7 @@
     }
     function passed() {
       over = true;
+      playSound("passed_challenge");
       giveUpBtn.disabled = true;
       stopTimer(timer);
       draw();
@@ -711,6 +723,7 @@
       giveUpBtn.disabled = true;
       feedback.className = "feedback good";
       feedback.textContent = "Correct! Your penance is complete.";
+      playSound("pennance_complete");
       actions.replaceChildren(button("Continue", () => {
         closeModal();
         const result = R.finishPenance(state, rng);
@@ -782,6 +795,7 @@
   }
   function victory() {
     closeModal();
+    const fanfare = playSound("final_victory");
     const unlocks = R.codexUnlocks(state);
     const score = scoreText(state);
     codex.beaten = true;
@@ -801,7 +815,10 @@
       unlocks.perfect ? el("p", { class: "center" }, "You made no mistakes along the way.") : null,
       ...R.codexMessages(unlocks).map(text => el("p", { class: "center" }, text)),
       el("p", { class: "center" }, el("em", {}, "Ave Maria")),
-      el("div", { class: "menu-buttons back-row" }, button("Main Menu", showMenu, "primary")));
+      el("div", { class: "menu-buttons back-row" }, button("Main Menu", () => {
+        if (fanfare) fanfare.pause(); // the victory music ends with the victory screen
+        showMenu();
+      }, "primary")));
   }
 
   // ---- Panels: menu, options, codex, about ------------------------------------------------------

@@ -49,6 +49,8 @@ def main():
 
     data = build_data()
     portraits = {s["portrait"]: data_uri(ROOT / "portraits" / s["portrait"], "image/jpeg") for s in data["saints"]}
+    # Sound effects (spec 13), keyed by file name without ".mp3".
+    sounds = {p.stem: data_uri(p, "audio/mpeg") for p in sorted((ROOT / "sounds").glob("*.mp3"))}
 
     html = TEMPLATE.read_text(encoding="utf-8")
     html = html.replace("__VERSION__", VERSION.read_text(encoding="utf-8").strip())
@@ -56,6 +58,7 @@ def main():
     html = html.replace("__BOARD_SRC__", board_src)
     html = html.replace("__GAME_DATA__", script_json(data))
     html = html.replace("__PORTRAITS__", script_json(portraits))
+    html = html.replace("__SOUNDS__", script_json(sounds))
     html = html.replace("__RULES_JS__", (HERE / "rules.js").read_text(encoding="utf-8"))
     html = html.replace("__GAME_JS__", (HERE / "game.js").read_text(encoding="utf-8"))
     OUTPUT.write_text(html, encoding="utf-8")

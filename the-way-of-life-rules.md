@@ -473,3 +473,21 @@ The menu shows the game's title over the zoomed board, the buttons below, and th
 
 - Victory screen art.
 - About screen content, including a credit line for each portrait marked "Credit needed: Yes" in `saint_portrait_sources.md`.
+
+---
+
+## 13. Sound Effects
+
+Five short sounds, kept in the `sounds/` folder; each file's name says when it plays. Each plays once per event, never on a loop:
+
+| File | Plays when |
+|---|---|
+| `question_answered_correctly.mp3` | a catechism question is answered correctly |
+| `question_wrong.mp3` | a catechism question is answered wrongly |
+| `passed_challenge.mp3` | a Prayer Challenge is completed or a Saint Challenge is won |
+| `pennance_complete.mp3` | the penance prayer is submitted correctly |
+| `final_victory.mp3` | the victory screen opens; it stops when the player leaves the victory screen |
+
+- The browser build embeds the sounds in the page; the Android build copies them into the app's assets.
+- Browsers only play sound after the player has tapped or clicked, and every sound here follows a tap or click. On an iPhone the silent switch can mute them.
+
