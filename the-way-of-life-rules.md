@@ -14,7 +14,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 |---|---|---|
 | `St_Joseph_First_Communion_Catechism_Quiz.csv` | 93 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer` |
 | `Catechism_Advanced_Questions.csv` | 289 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
-| `Catholic_Saints_Trivia.csv` | 193 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
+| `Catholic_Saints_Trivia.csv` | 209 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
 | `Catholic_Prayers_Segments.csv` | 30 (15 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
 | `Catholic_Moral_Dilemmas.csv` | 34 | `Number`, `Title`, `Age Level`, `Dilemma`, `Question`, `Right Choice`, `Wrong Choice`, `Catholic Answer`, `Key Principle`, `CCC References`, `Sources` |
 
@@ -37,11 +37,11 @@ Two columns in `Catholic_Saints_Trivia.csv` support name matching (Section 6.4).
 Two more columns support saint cards (Section 7), also filled in:
 
 - `Invocation`: the text shown when the card is used. If empty, use `Saint {Display Name}, pray for me!`, where the display name is the `Saint` column without the leading `St. `. Five saints have an override: The Blessed Virgin Mary (`Holy Mary, Mother of God, pray for me!`) and the four saints whose names contain a parenthetical (Acacius, Erasmus, Pio of Pietrelcina, Teresa of Calcutta), so the parentheses never appear in the prayer.
-- `Portrait`: filename of the saint's portrait image, filled in for all 193 (for example `teresa_of_avila.jpg`). The 256 x 256 JPEG images are in the `portraits/` folder; `saint_portrait_sources.md` lists where each one came from and its license.
+- `Portrait`: filename of the saint's portrait image, filled in for all 209 (for example `teresa_of_avila.jpg`). The 256 x 256 JPEG images are in the `portraits/` folder; `saint_portrait_sources.md` lists where each one came from and its license.
 
 One more column sets which saints come up by default:
 
-- `Lesser Known`: `TRUE` or `FALSE`. A lesser-known saint comes up in a Saint Challenge only with the Saints option set to include them (Section 11.2). The first 113 saints are all well known (`FALSE`). Another 80 were added from a list of lesser-known saints: the 36 born earlier (early martyrs and Fathers, and the holy men and women of the Old Testament) are `FALSE` and come up in every game, as are four later saints judged well known after all (Thomas Becket, Rita of Cascia, Damien of Molokai, Maria Goretti); the other 40, born after the 6th century AD, are `TRUE`.
+- `Lesser Known`: `TRUE` or `FALSE`. A lesser-known saint comes up in a Saint Challenge only with the Saints option set to include them (Section 11.2). The first 113 saints are all well known (`FALSE`). Another 80 were added from a list of lesser-known saints: the 36 born earlier (early martyrs and Fathers, and the holy men and women of the Old Testament) are `FALSE` and come up in every game, as are four later saints judged well known after all (Thomas Becket, Rita of Cascia, Damien of Molokai, Maria Goretti); the other 40, born after the 6th century AD, are `TRUE`. Version 1.0.3 added 16 more well-known saints (`FALSE`), from the Fatima children Francisco and Jacinta Marto to St. Olaf of Norway.
 - Three names were adjusted when the 80 were added, so that short guesses keep their meaning (Section 6.4): "St. Joseph (son of Jacob)" became "St. Joseph the Patriarch (son of Jacob)" and "St. Cyril" became "St. Cyril of Thessalonica", so "Joseph" still means St. Joseph and "Cyril" alone is too vague rather than quietly meaning the newer saint; and St. Benedict of Nursia gained the accepted name `Benedict`, so Edith Stein's religious name (Teresa Benedicta of the Cross) does not make "Benedict" too vague.
 
 ### 1.2 Required new data file: name equivalents
@@ -196,7 +196,7 @@ When the 5th correct answer occurs: show the "Correct!" feedback, move the playe
 
 ### 6.1 Saint selection
 
-Pick a random saint that the player does not currently hold a card for in this game, from the well-known saints, or from all 193 when the Saints option includes the lesser-known ones (Section 11.2). If the player somehow holds every one of them, pick any of them at random.
+Pick a random saint that the player does not currently hold a card for in this game, from the well-known saints, or from all 209 when the Saints option includes the lesser-known ones (Section 11.2). If the player somehow holds every one of them, pick any of them at random.
 
 ### 6.2 Timer, layout and clue reveal
 
@@ -443,7 +443,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.3") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
