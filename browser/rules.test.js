@@ -202,7 +202,23 @@ test("codex unlocks: saints need All prayers, older dilemmas need advanced quest
 test("pickSaint never offers a held saint", () => {
   const s = R.newGame(data, rng);
   data.saints.slice(1).forEach(x => R.winSaint(s, x.name));
-  for (let i = 0; i < 20; i++) assert.strictEqual(R.pickSaint(s, data, rng), 0);
+  for (let i = 0; i < 20; i++) assert.strictEqual(R.pickSaint(s, data, true, rng), 0);
+});
+
+test("lesser-known saints come up only with the option, and only they make a name vague", () => {
+  const s = R.newGame(data, rng);
+  assert.ok(data.saints.some(x => x.lesser) && data.saints.some(x => !x.lesser));
+  for (let i = 0; i < 200; i++) assert.ok(!data.saints[R.pickSaint(s, data, false, rng)].lesser);
+  const seen = new Set();
+  for (let i = 0; i < 2000; i++) seen.add(data.saints[R.pickSaint(s, data, true, rng)].lesser);
+  assert.ok(seen.has(true));
+  const index = name => data.saints.findIndex(x => x.name === name);
+  const wellKnown = x => !x.lesser;
+  // Rose of Lima and Rose Philippine Duchesne (lesser known) share "Rose".
+  assert.strictEqual(R.judgeGuess("rose", data.saints, data.equivalents).result, "vague");
+  assert.strictEqual(R.judgeGuess("rose", data.saints, data.equivalents, wellKnown).saint, index("St. Rose of Lima"));
+  assert.strictEqual(R.judgeGuess("joseph", data.saints, data.equivalents).saint, index("St. Joseph"));
+  assert.strictEqual(R.judgeGuess("benedict", data.saints, data.equivalents).saint, index("St. Benedict of Nursia"));
 });
 
 console.log(`${passed} test groups passed${process.exitCode ? ", some FAILED" : ""}`);

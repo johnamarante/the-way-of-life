@@ -223,6 +223,18 @@ class RulesTest {
     fun `a saint already held is never offered`() {
         val s = Rules.newGame(data, random)
         data.saints.drop(1).forEach { Rules.winSaint(s, it.name) }
-        repeat(20) { assertEquals(0, Rules.pickSaint(s, data, random)) }
+        repeat(20) { assertEquals(0, Rules.pickSaint(s, data, true, random)) }
+    }
+
+    @Test
+    fun `lesser-known saints come up only with the option, and only they make a name vague`() {
+        val s = Rules.newGame(data, random)
+        repeat(200) { assertFalse(data.saints[Rules.pickSaint(s, data, false, random)].lesser) }
+        assertTrue((1..2000).any { data.saints[Rules.pickSaint(s, data, true, random)].lesser })
+        val index = { name: String -> data.saints.indexOfFirst { it.name == name } }
+        assertEquals(GuessResult.VAGUE, Rules.judgeGuess("rose", data.saints, data.equivalents).result)
+        assertEquals(index("St. Rose of Lima"), Rules.judgeGuess("rose", data.saints, data.equivalents) { !data.saints[it].lesser }.saint)
+        assertEquals(index("St. Joseph"), Rules.judgeGuess("joseph", data.saints, data.equivalents).saint)
+        assertEquals(index("St. Benedict of Nursia"), Rules.judgeGuess("benedict", data.saints, data.equivalents).saint)
     }
 }

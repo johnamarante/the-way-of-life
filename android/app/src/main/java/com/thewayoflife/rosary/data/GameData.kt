@@ -28,6 +28,8 @@ data class Saint(
     val spellings: List<String>,
     val invocation: String,
     val portrait: String,
+    /** Spec 11.2: comes up only with the Lesser-known saints option. */
+    val lesser: Boolean = false,
 )
 
 data class PrayerText(val title: String, val segments: List<String>)
@@ -96,6 +98,7 @@ data class GameData(
                         spellings = it.getJSONArray("spellings").strings(),
                         invocation = it.getString("invocation"),
                         portrait = it.getString("portrait"),
+                        lesser = it.optBoolean("lesser", false),
                     )
                 },
                 prayers = root.getJSONArray("prayers").objects().map {

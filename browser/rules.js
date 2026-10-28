@@ -91,16 +91,20 @@
   }
 
   // Returns { result: "ignored" | "accepted" | "vague" | "none", saint: index or -1, candidates: [indexes] }.
-  function judgeGuess(guess, saints, equivalents) {
+  // `inPlay(saint, index)` leaves out saints that cannot come up in this game (spec 6.4), so a name is
+  // only too vague when it fits more than one saint the player could be asked about.
+  function judgeGuess(guess, saints, equivalents, inPlay = () => true) {
     const g = normalize(guess);
     if (g.length === 0) return { result: "ignored", saint: -1, candidates: [] };
     const exact = [];
     saints.forEach((s, i) => {
+      if (!inPlay(s, i)) return;
       if (s.variants.some(v => v.length === g.length && v.every((w, k) => wordMatches(g[k], w, s, equivalents, false)))) exact.push(i);
     });
     if (exact.length === 1) return { result: "accepted", saint: exact[0], candidates: exact };
     const subset = [];
     saints.forEach((s, i) => {
+      if (!inPlay(s, i)) return;
       if (s.variants.some(v => g.every(gw => v.some(w => wordMatches(gw, w, s, equivalents, true))))) subset.push(i);
     });
     if (subset.length === 1) return { result: "accepted", saint: subset[0], candidates: subset };
@@ -175,10 +179,13 @@
     }
   }
 
-  function pickSaint(state, data, rng) {
+  // Spec 6.1: a saint the player does not hold yet; lesser-known saints only with the option (spec 11.2).
+  function pickSaint(state, data, includeLesser, rng) {
     const held = new Set(state.cards);
-    let pool = data.saints.map((_, i) => i).filter(i => !held.has(data.saints[i].name));
-    if (pool.length === 0) pool = data.saints.map((_, i) => i);
+    let eligible = data.saints.map((_, i) => i).filter(i => includeLesser || !data.saints[i].lesser);
+    if (eligible.length === 0) eligible = data.saints.map((_, i) => i);
+    let pool = eligible.filter(i => !held.has(data.saints[i].name));
+    if (pool.length === 0) pool = eligible;
     return pool[Math.floor(rng() * pool.length)];
   }
 

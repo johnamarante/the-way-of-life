@@ -205,6 +205,10 @@ fun OptionsPanel(vm: GameViewModel) = Panel {
     listOf(false to "All prayers", true to "Easy prayers only: $easy").forEach { (value, label) ->
         OptionRow(label, options.easyPrayers == value) { vm.updateOptions(options.copy(easyPrayers = value)) }
     }
+    Text("Saints:", modifier = Modifier.padding(top = 8.dp))
+    listOf(false to "Well-known saints only", true to "Include lesser-known saints").forEach { (value, label) ->
+        OptionRow(label, options.lesserSaints == value) { vm.updateOptions(options.copy(lesserSaints = value)) }
+    }
     Text("Moral dilemmas at the Cross:", modifier = Modifier.padding(top = 8.dp))
     listOf(false to "All Ages only", true to "Include Ages 13 and up").forEach { (value, label) ->
         OptionRow(label, options.includeOlder == value) { vm.updateOptions(options.copy(includeOlder = value)) }

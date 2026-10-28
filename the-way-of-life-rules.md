@@ -14,7 +14,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 |---|---|---|
 | `St_Joseph_First_Communion_Catechism_Quiz.csv` | 93 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer` |
 | `Catechism_Advanced_Questions.csv` | 289 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
-| `Catholic_Saints_Trivia.csv` | 113 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait` |
+| `Catholic_Saints_Trivia.csv` | 193 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
 | `Catholic_Prayers_Segments.csv` | 30 (15 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
 | `Catholic_Moral_Dilemmas.csv` | 34 | `Number`, `Title`, `Age Level`, `Dilemma`, `Question`, `Right Choice`, `Wrong Choice`, `Catholic Answer`, `Key Principle`, `CCC References`, `Sources` |
 
@@ -37,7 +37,12 @@ Two columns in `Catholic_Saints_Trivia.csv` support name matching (Section 6.4).
 Two more columns support saint cards (Section 7), also filled in:
 
 - `Invocation`: the text shown when the card is used. If empty, use `Saint {Display Name}, pray for me!`, where the display name is the `Saint` column without the leading `St. `. Five saints have an override: The Blessed Virgin Mary (`Holy Mary, Mother of God, pray for me!`) and the four saints whose names contain a parenthetical (Acacius, Erasmus, Pio of Pietrelcina, Teresa of Calcutta), so the parentheses never appear in the prayer.
-- `Portrait`: filename of the saint's portrait image, filled in for all 113 (for example `teresa_of_avila.jpg`). The 256 x 256 JPEG images are in the `portraits/` folder; `saint_portrait_sources.md` lists where each one came from and its license.
+- `Portrait`: filename of the saint's portrait image, filled in for all 193 (for example `teresa_of_avila.jpg`). The 256 x 256 JPEG images are in the `portraits/` folder; `saint_portrait_sources.md` lists where each one came from and its license.
+
+One more column sets which saints come up by default:
+
+- `Lesser Known`: `TRUE` or `FALSE`. A lesser-known saint comes up in a Saint Challenge only with the Saints option set to include them (Section 11.2). The first 113 saints are all well known (`FALSE`). Another 80 were added from a list of lesser-known saints: the 36 born earlier (early martyrs and Fathers, and the holy men and women of the Old Testament) are `FALSE` and come up in every game, as are four later saints judged well known after all (Thomas Becket, Rita of Cascia, Damien of Molokai, Maria Goretti); the other 40, born after the 6th century AD, are `TRUE`.
+- Three names were adjusted when the 80 were added, so that short guesses keep their meaning (Section 6.4): "St. Joseph (son of Jacob)" became "St. Joseph the Patriarch (son of Jacob)" and "St. Cyril" became "St. Cyril of Thessalonica", so "Joseph" still means St. Joseph and "Cyril" alone is too vague rather than quietly meaning the newer saint; and St. Benedict of Nursia gained the accepted name `Benedict`, so Edith Stein's religious name (Teresa Benedicta of the Cross) does not make "Benedict" too vague.
 
 ### 1.2 Required new data file: name equivalents
 
@@ -191,7 +196,7 @@ When the 5th correct answer occurs: show the "Correct!" feedback, move the playe
 
 ### 6.1 Saint selection
 
-Pick a random saint from the 113 that the player does not currently hold a card for in this game. If the player somehow holds all 113, pick any saint at random.
+Pick a random saint that the player does not currently hold a card for in this game, from the well-known saints, or from all 193 when the Saints option includes the lesser-known ones (Section 11.2). If the player somehow holds every one of them, pick any of them at random.
 
 ### 6.2 Timer, layout and clue reveal
 
@@ -220,6 +225,8 @@ Pick a random saint from the 113 that the player does not currently hold a card 
 ### 6.4 Name matching
 
 The goal is to be forgiving about casing, spelling, and partial names, but to require a guess specific enough that it cannot mean a different saint in the bank.
+
+The bank is the saints that can come up in this game: with the Saints option on "Well-known saints only," the lesser-known saints are left out of the matching, so "Rose" means St. Rose of Lima; with them included, "Rose" is too vague (Rose of Lima or Rose Philippine Duchesne). The saint being asked about is always in the bank, even if the option was changed during the challenge.
 
 **Normalization** (applied to guesses and to every name variant):
 
@@ -276,7 +283,7 @@ The goal is to be forgiving about casing, spelling, and partial names, but to re
 | `juan` or `jean` | Too vague | Equivalents are not used by the exact rule; the subset rule matches Juan Diego and every John |
 | `juan diego` | Accepted (Juan Diego) | Unique subset |
 
-These examples were checked against the real saints list, including the filled-in `Accepted Names` and `Accepted Spellings` columns, with a direct implementation of this section.
+These examples were checked against the real saints list (with the lesser-known saints included; none of the results change without them), including the filled-in `Accepted Names` and `Accepted Spellings` columns, with a direct implementation of this section.
 
 ### 6.5 Outcome
 
@@ -436,7 +443,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.1") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
@@ -458,6 +465,7 @@ The menu shows the game's title over the zoomed board, the buttons below, and th
 - **Challenge window size:** Compact, Standard or Large. Compact is at most 480 wide and half the screen tall; Standard 580 wide and 70% tall; Large 680 wide and as tall as the screen allows. The content scrolls inside when it does not fit. It does not apply while a prayer is being arranged, which always takes the whole screen (Section 8.2). Default: Compact.
 - **Catechism questions:** "Normal questions only" or "Include advanced questions from the Catechism of the Catholic Church" (Section 4.1). It is separate from Easy prayers and from the dilemma age level, and can be changed at any time; it takes effect from the next question drawn. Default: Normal questions only.
 - **Prayers:** "All prayers" or "Easy prayers only." With easy prayers, only the prayers marked `EasyPrayer` = `TRUE` in the data appear in Prayer Challenges and penance: The Our Father, The Hail Mary, The Glory Be, The Sign of the Cross, Grace Before Meals and The Guardian Angel Prayer. The player still chooses English or Latin, and Latin still skips five beads. It can be changed at any time, including during a game (from the in-game menu button, then Options); it takes effect from the next prayer drawn. Default: All prayers.
+- **Saints:** "Well-known saints only" or "Include lesser-known saints" (the `Lesser Known` column, Section 1.1). It takes effect from the next Saint Challenge. Default: Well-known saints only. Lesser-known saints are still listed in the Codex either way.
 - **Moral dilemma age level:** "All Ages only" or "Include Ages 13 and up." Default: All Ages only.
 
 ---

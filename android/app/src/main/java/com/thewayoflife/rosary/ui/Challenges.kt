@@ -436,6 +436,8 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
 @Composable
 private fun SaintChallengeContent(vm: GameViewModel, saintIndex: Int) {
     val saint = vm.data.saints[saintIndex]
+    // Names are matched only against saints that can come up in this game, and always this one (spec 6.4).
+    val inPlay = { i: Int -> i == saintIndex || vm.options.lesserSaints || !vm.data.saints[i].lesser }
     val countdown = remember { Countdown(Rules.SAINT_SECONDS) }
     var guess by remember { mutableStateOf("") }
     var feedback by remember { mutableStateOf("") }
@@ -470,7 +472,7 @@ private fun SaintChallengeContent(vm: GameViewModel, saintIndex: Int) {
     // The name is checked after every keystroke, and the challenge is won as soon as it would be accepted
     // (spec 6.3); there is no Submit button. Done on the keyboard explains why a guess is not accepted yet.
     fun accepted(text: String): Boolean {
-        val j = Rules.judgeGuess(text, vm.data.saints, vm.data.equivalents)
+        val j = Rules.judgeGuess(text, vm.data.saints, vm.data.equivalents, inPlay)
         if (j.result != GuessResult.ACCEPTED || j.saint != saintIndex) return false
         keyboard?.hide()
         focus.clearFocus()
@@ -479,7 +481,7 @@ private fun SaintChallengeContent(vm: GameViewModel, saintIndex: Int) {
     }
     fun explain() {
         if (accepted(guess)) return
-        feedback = when (Rules.judgeGuess(guess, vm.data.saints, vm.data.equivalents).result) {
+        feedback = when (Rules.judgeGuess(guess, vm.data.saints, vm.data.equivalents, inPlay).result) {
             GuessResult.IGNORED -> feedback
             GuessResult.VAGUE -> "More than one saint has that name. Be more specific."
             else -> "Not quite, try again."
@@ -500,7 +502,7 @@ private fun SaintChallengeContent(vm: GameViewModel, saintIndex: Int) {
         if (beat == 0) return@LaunchedEffect
         // A name that fits more than one saint (such as "Ignatius") never wins by itself, so say so
         // without waiting for Done (spec 6.3).
-        if (Rules.judgeGuess(guess, vm.data.saints, vm.data.equivalents).result == GuessResult.VAGUE) {
+        if (Rules.judgeGuess(guess, vm.data.saints, vm.data.equivalents, inPlay).result == GuessResult.VAGUE) {
             feedback = "More than one saint has that name. Be more specific."
         }
         if (shown < saint.clues.size) nudge.animateTo(0f, SHUDDER)

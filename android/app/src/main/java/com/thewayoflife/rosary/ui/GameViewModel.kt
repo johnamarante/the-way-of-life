@@ -173,7 +173,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         addQuestionToCodex(questionId)
         val move = Rules.answerCorrect(g)
         afterMove(move) {
-            if (move.saintChallenge) openChallenge(Challenge.SaintChallenge(Rules.pickSaint(g, data, random))) else nextChallenge()
+            if (move.saintChallenge) openChallenge(Challenge.SaintChallenge(Rules.pickSaint(g, data, options.lesserSaints, random))) else nextChallenge()
         }
     }
 

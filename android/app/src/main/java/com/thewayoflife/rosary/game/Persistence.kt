@@ -33,6 +33,8 @@ data class Options(
     val easyPrayers: Boolean = false,
     /** Spec 11.2: mix the advanced questions from the Catechism of the Catholic Church in with the normal ones. */
     val advancedQuestions: Boolean = false,
+    /** Spec 11.2: the lesser-known saints come up in Saint Challenges too. */
+    val lesserSaints: Boolean = false,
     val textSize: TextSize = TextSize.SMALL,
     val modalSize: ModalSize = ModalSize.COMPACT,
 )
@@ -88,6 +90,7 @@ class GameStore(context: Context) {
         includeOlder = preferences.getBoolean(KEY_INCLUDE_OLDER, false),
         easyPrayers = preferences.getBoolean(KEY_EASY_PRAYERS, false),
         advancedQuestions = preferences.getBoolean(KEY_ADVANCED_QUESTIONS, false),
+        lesserSaints = preferences.getBoolean(KEY_LESSER_SAINTS, false),
         textSize = TextSize.entries.firstOrNull { it.name == preferences.getString(KEY_TEXT_SIZE, null) } ?: TextSize.SMALL,
         modalSize = ModalSize.entries.firstOrNull { it.name == preferences.getString(KEY_MODAL_SIZE, null) } ?: ModalSize.COMPACT,
     )
@@ -97,6 +100,7 @@ class GameStore(context: Context) {
             .putBoolean(KEY_INCLUDE_OLDER, options.includeOlder)
             .putBoolean(KEY_EASY_PRAYERS, options.easyPrayers)
             .putBoolean(KEY_ADVANCED_QUESTIONS, options.advancedQuestions)
+            .putBoolean(KEY_LESSER_SAINTS, options.lesserSaints)
             .putString(KEY_TEXT_SIZE, options.textSize.name)
             .putString(KEY_MODAL_SIZE, options.modalSize.name)
             .apply()
@@ -108,6 +112,7 @@ class GameStore(context: Context) {
         const val KEY_INCLUDE_OLDER = "includeOlder"
         const val KEY_EASY_PRAYERS = "easyPrayers"
         const val KEY_ADVANCED_QUESTIONS = "advancedQuestions"
+        const val KEY_LESSER_SAINTS = "lesserSaints"
         const val KEY_TEXT_SIZE = "textSize"
         const val KEY_MODAL_SIZE = "modalSize"
         const val SAVE_VERSION = 1

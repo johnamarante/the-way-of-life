@@ -120,15 +120,24 @@ object Rules {
             (useEquivalents && equivalents.any { guessWord in it && nameWord in it }) ||
             (nameWord.length >= 5 && withinOneEdit(guessWord, nameWord))
 
-    fun judgeGuess(guess: String, saints: List<Saint>, equivalents: List<List<String>>): Judgement {
+    /**
+     * [inPlay] leaves out saints that cannot come up in this game (spec 6.4), so a name is only too vague
+     * when it fits more than one saint the player could be asked about.
+     */
+    fun judgeGuess(
+        guess: String,
+        saints: List<Saint>,
+        equivalents: List<List<String>>,
+        inPlay: (Int) -> Boolean = { true },
+    ): Judgement {
         val g = normalize(guess)
         if (g.isEmpty()) return Judgement(GuessResult.IGNORED)
         val exact = saints.indices.filter { i ->
-            saints[i].variants.any { v -> v.size == g.size && v.indices.all { k -> wordMatches(g[k], v[k], saints[i], equivalents, false) } }
+            inPlay(i) && saints[i].variants.any { v -> v.size == g.size && v.indices.all { k -> wordMatches(g[k], v[k], saints[i], equivalents, false) } }
         }
         if (exact.size == 1) return Judgement(GuessResult.ACCEPTED, exact[0])
         val subset = saints.indices.filter { i ->
-            saints[i].variants.any { v -> g.all { gw -> v.any { w -> wordMatches(gw, w, saints[i], equivalents, true) } } }
+            inPlay(i) && saints[i].variants.any { v -> g.all { gw -> v.any { w -> wordMatches(gw, w, saints[i], equivalents, true) } } }
         }
         return when {
             subset.size == 1 -> Judgement(GuessResult.ACCEPTED, subset[0])
@@ -191,8 +200,10 @@ object Rules {
         }
     }
 
-    fun pickSaint(state: GameState, data: GameData, random: Random): Int {
-        val pool = data.saints.indices.filter { data.saints[it].name !in state.cards }.ifEmpty { data.saints.indices.toList() }
+    /** Spec 6.1: a saint the player does not hold yet; lesser-known saints only with the option (spec 11.2). */
+    fun pickSaint(state: GameState, data: GameData, includeLesser: Boolean, random: Random): Int {
+        val eligible = data.saints.indices.filter { includeLesser || !data.saints[it].lesser }.ifEmpty { data.saints.indices.toList() }
+        val pool = eligible.filter { data.saints[it].name !in state.cards }.ifEmpty { eligible }
         return pool.random(random)
     }
 

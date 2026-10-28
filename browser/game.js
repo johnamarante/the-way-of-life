@@ -45,7 +45,7 @@
     const opened = !!saved.complete;
     return Object.assign({ saints: [], questions: [], dilemmas: [], beaten: false, complete: false, allSaints: opened, olderDilemmas: opened }, saved);
   })();
-  let options = Object.assign({ includeOlder: false, easyPrayers: false, advancedQuestions: false, textSize: "small", modalSize: "compact" }, load(KEYS.options, {}));
+  let options = Object.assign({ includeOlder: false, easyPrayers: false, advancedQuestions: false, lesserSaints: false, textSize: "small", modalSize: "compact" }, load(KEYS.options, {}));
   store("wayoflife.rosary.position", null); // left over from the bead-lighting prototype
 
   function saveGame() { if (state) store(KEYS.save, state); }
@@ -388,7 +388,7 @@
         setTimeout(() => {
           closeModal();
           const result = R.answerCorrect(state);
-          if (result.saintChallenge) state.challenge = { kind: "saint", saint: R.pickSaint(state, DATA, rng) };
+          if (result.saintChallenge) state.challenge = { kind: "saint", saint: R.pickSaint(state, DATA, options.lesserSaints, rng) };
           afterMove(result.restored, () => result.saintChallenge ? openChallenge() : nextChallenge());
         }, CORRECT_PAUSE_MS);
       } else {
@@ -458,6 +458,8 @@
       nextClue.disabled = shown >= saint.clues.length;
       clue.scrollIntoView({ block: "nearest" });
     }
+    // Names are matched only against saints that can come up in this game, and always this one (spec 6.4).
+    const inPlay = (s, i) => i === saintIndex || options.lesserSaints || !s.lesser;
     // Every 5 seconds Next Clue shudders, as a reminder that more clues are there.
     let beat = 0;
     const timer = startTimer(R.SAINT_SECONDS, (elapsed, remaining) => {
@@ -467,7 +469,7 @@
         if (!nextClue.disabled) shudder(nextClue);
         // A name that fits more than one saint (such as "Ignatius") never wins by itself, so say so
         // without waiting for Enter (spec 6.3).
-        if (!over && R.judgeGuess(input.value, DATA.saints, DATA.equivalents).result === "vague") {
+        if (!over && R.judgeGuess(input.value, DATA.saints, DATA.equivalents, inPlay).result === "vague") {
           feedback.className = "feedback bad";
           feedback.textContent = "More than one saint has that name. Be more specific.";
         }
@@ -476,7 +478,7 @@
     // The name is checked after every keystroke, and the challenge is won as soon as it would be
     // accepted (spec 6.3); there is no Submit button. Enter explains why a guess is not accepted yet.
     function accepted() {
-      const r = R.judgeGuess(input.value, DATA.saints, DATA.equivalents);
+      const r = R.judgeGuess(input.value, DATA.saints, DATA.equivalents, inPlay);
       if (r.result !== "accepted" || r.saint !== saintIndex) return false;
       input.blur();
       finish(true);
@@ -484,7 +486,7 @@
     }
     function guess() {
       if (over || accepted()) return;
-      const r = R.judgeGuess(input.value, DATA.saints, DATA.equivalents);
+      const r = R.judgeGuess(input.value, DATA.saints, DATA.equivalents, inPlay);
       if (r.result === "ignored") return;
       feedback.className = "feedback bad";
       feedback.textContent = r.result === "vague" ? "More than one saint has that name. Be more specific." : "Not quite, try again.";
@@ -943,6 +945,9 @@
         el("p", {}, "Prayers:"),
         radio("easyPrayers", false, "All prayers"),
         radio("easyPrayers", true, "Easy prayers only: " + DATA.prayers.filter(p => p.easy).map(p => p.english.title.replace(/^The /, "")).join(", ")),
+        el("p", {}, "Saints:"),
+        radio("lesserSaints", false, "Well-known saints only"),
+        radio("lesserSaints", true, "Include lesser-known saints"),
         el("p", {}, "Moral dilemmas at the Cross:"),
         radio("includeOlder", false, "All Ages only"),
         radio("includeOlder", true, "Include Ages 13 and up")),

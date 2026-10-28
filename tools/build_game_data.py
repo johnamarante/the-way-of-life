@@ -103,6 +103,8 @@ def build_saints():
             "spellings": [w for s in split_list(row.get("Accepted Spellings")) for w in normalize(s)],
             "invocation": row.get("Invocation", "").strip() or f"Saint {display}, pray for me!",
             "portrait": row.get("Portrait", "").strip(),
+            # Spec 11.2: lesser-known saints only come up with the option that includes them.
+            "lesser": row.get("Lesser Known", "").strip().lower() == "true",
         })
     return saints
 
