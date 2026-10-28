@@ -332,6 +332,13 @@
     55% { rotate: -1.1deg; }
     75% { rotate: 0.7deg; }
   }
+  /* A tapped capsule shudders and stays highlighted until a second tap swaps it with another (spec 8.2). */
+  .capsule.selected {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold);
+    animation: shudder 320ms ease;
+  }
   .capsules.over .capsule { cursor: default; }
   .btn.shudder { animation: shudder 320ms ease; }
   /* Wider than the capsules, so it is easy to see where the held one will land. */

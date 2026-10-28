@@ -334,10 +334,13 @@ When the player taps an eligible card:
 
 - Once the language is chosen, the prayer takes the whole screen, covering the board and the in-game bar, so that even the longest prayers show as many segments as possible. The timer stays in the top corner, and a menu button sits beside the heading so the player can still go back to the main menu. The Text size option (Section 11.2) still applies, but the Challenge window size does not.
 - The segments are shown as a vertical list of capsules (rounded rectangles), one segment per capsule, in a shuffled order, packed closely together. The list is inset a little (24 px / 24 dp) from both sides of the screen, so a left- or right-handed player can scroll with a thumb in that margin without grabbing a capsule.
-- The player rearranges them by drag and drop: press and hold a capsule (finger or mouse) and drag it up or down. When grabbed, the capsule gives a short shudder, is highlighted and lifted with a shadow, and follows the finger.
+- The player rearranges them in either of two ways, and can mix them freely:
+  - **Drag and drop:** press a capsule (finger or mouse) and drag it up or down. As soon as it moves a little, it is grabbed: it gives a short shudder, is highlighted and lifted with a shadow, and follows the finger.
+  - **Tap to swap:** tap a capsule without moving it. It gives a short shudder and stays highlighted. Tapping a second capsule swaps the two; tapping the highlighted one again puts it back. Starting to drag any capsule also puts back a highlighted one.
+- The introduction before the language choice says "Drag each line to where it belongs, or tap two lines to swap them."
 - While dragging, a dark line, a little wider than the capsules, appears in the gap between capsules where the held capsule will go: above the first capsule, between two, or below the last. No line shows while the capsule is over its own place. Letting go moves the capsule into that gap; the others close up around it. Letting go with no line showing leaves the order unchanged.
 - When a capsule is held near the top or bottom edge of the screen, the list scrolls so it can reach segments out of view.
-- **Timed Prayer Challenge (Glory beads):** the order is checked after every drop. As soon as the order is correct and time remains, the player passes immediately: the timer stops and the pass is recorded. There is no "Not quite" message and no hint about which segments are out of place.
+- **Timed Prayer Challenge (Glory beads):** the order is checked after every drop or swap. As soon as the order is correct and time remains, the player passes immediately: the timer stops and the pass is recorded. There is no "Not quite" message and no hint about which segments are out of place.
 - **Penance prayer (Section 9.3):** there is a **Submit** button instead of automatic checking. Submitting shows "Correct!" or "Not quite, keep trying." The player can only continue the game after submitting the correct order. This makes the player work from what they actually know.
 
 ### 8.3 Time limit
@@ -373,8 +376,9 @@ Compute the time from the data rather than hard-coding this table, so edits to t
 - **Completed in English:** move the player to bead 1 of the next decade.
 - **Completed in Latin:** move the player to bead 6 of the next decade (beads 1 to 5 are skipped and do not affect the streak).
 - **Completed on Glory bead 5:** in English, move to final bead 1. In Latin, skip the three final beads entirely and go straight to the Cross and the Moral Dilemma.
-- **Time runs out:** show "Time's up," then start a new Prayer Challenge on the same bead with the next prayer from the deck, and ask for the language again. The missed challenge counts against the score (Section 3.1).
-- **Give Up:** a Give Up button sits below the capsules while the player is arranging. It ends the challenge at once and starts a new Prayer Challenge on the same bead with the next prayer from the deck, asking for the language again. There is no other penalty, but like running out of time it counts as a missed challenge in the score (Section 3.1), so it rules out a perfect game.
+- **Time runs out:** the capsules move into the right order so the player can learn the prayer, with "Time's up. Here is the prayer in the right order." and a **Try another prayer** button. That button starts a new Prayer Challenge on the same bead with the next prayer from the deck, and asks for the language again. The missed challenge counts against the score (Section 3.1).
+- **Give Up:** a Give Up button sits below the capsules while the player is arranging. It ends the challenge at once and, as when time runs out, shows the prayer in the right order with "Here is the prayer in the right order." and **Try another prayer**. There is no other penalty, but like running out of time it counts as a missed challenge in the score (Section 3.1), so it rules out a perfect game.
+- The next prayer is drawn and saved as soon as the right order is shown, so going back to the menu and resuming cannot retry the prayer just shown.
 
 ---
 
@@ -396,7 +400,7 @@ Compute the time from the data rather than hard-coding this table, so edits to t
 ### 9.3 Penance
 
 1. The player falls back to Decade 1, bead 1 (the waters of Baptism). Show this on the board: the Cross glow goes out, then the lit beads turn off one at a time from the top down to bead 1, about 30 ms per bead (under 2 seconds in total). Bead 1 stays lit.
-2. A penance Prayer Challenge begins: the next prayer is drawn from the prayer deck (Section 8.1), the modal gives its number of segments and says there is no time limit, and the player chooses English or Latin. It works like Section 8 except there is **no timer**, **no Latin bonus**, and the arrangement is checked only when the player taps **Submit** (Section 8.2). Give Up sits beside Submit and changes to the next prayer from the deck, with no penalty.
+2. A penance Prayer Challenge begins: the next prayer is drawn from the prayer deck (Section 8.1), the modal gives its number of segments and says there is no time limit, and the player chooses English or Latin. It works like Section 8 except there is **no timer**, **no Latin bonus**, and the arrangement is checked only when the player taps **Submit** (Section 8.2). Give Up sits beside Submit; it shows the prayer in the right order (Section 8.4), then Try another prayer changes to the next prayer from the deck, with no penalty.
 3. When the prayer is completed, the player is restored to a random bead (1 to 10) of Decade 5.
 4. Play continues normally from there: catechism questions to the end of Decade 5, Glory bead 5, the final beads, and the Cross with the next dilemma from the draw (Section 9.1).
 5. Saint cards are kept. Entering Decade 5 counts as entering a new decade, so all cards are restored.
@@ -432,7 +436,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 0.2.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.0") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.

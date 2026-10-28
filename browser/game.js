@@ -14,6 +14,8 @@
   const CORRECT_PAUSE_MS = 900;
   const REMINDER_SECONDS = 5;
   const FALL_STEP_MS = 30;
+  // How far a pressed prayer capsule must move before it is dragged rather than tapped (spec 8.2).
+  const TAP_SLOP_PX = 8;
 
   // ---- Storage (localStorage can be blocked; the game still works without it) ----------------
 
@@ -555,8 +557,8 @@
       el("h2", {}, title),
       el("p", {}, el("strong", {}, prayerSize(DATA.prayers[prayerIndex], penance))),
       el("p", {}, penance
-        ? "Drag each line to where it belongs, then tap Submit. When it is right, you will be restored to the fifth decade."
-        : "Put the prayer in the right order before time runs out. Drag each line to where it belongs."),
+        ? "Drag each line to where it belongs, or tap two lines to swap them, then tap Submit. When it is right, you will be restored to the fifth decade."
+        : "Put the prayer in the right order before time runs out. Drag each line to where it belongs, or tap two lines to swap them."),
       penance ? null : el("p", {}, el("em", {}, "Pray it in Latin to skip ahead five beads.")),
       el("div", { class: "row" },
         button("English", () => arrangePrayer(prayerIndex, "english", penance)),
@@ -585,29 +587,66 @@
     let over = false;
     let timer = null;
     let drag = null;
+    let selected = -1;
 
     function draw() {
       if (drag) endDrag();
       list.textContent = "";
       order.forEach((text, i) => {
-        list.append(el("div", { class: "capsule", role: "listitem", onpointerdown: e => grab(e, i) }, text));
+        list.append(el("div", { class: "capsule" + (i === selected ? " selected" : ""), role: "listitem", onpointerdown: e => grab(e, i) }, text));
       });
       list.append(line);
     }
 
-    // Drag a capsule into the gap where it belongs (spec 8.2). Pointer events cover mouse and touch.
+    // A capsule is either dragged into the gap where it belongs, or tapped and then swapped with a second
+    // tapped capsule (spec 8.2). Pointer events cover mouse and touch. A press only becomes a drag once the
+    // pointer has moved a little; letting go before that is a tap.
     function grab(e, i) {
       if (over || drag || e.button > 0) return;
       e.preventDefault();
       const node = e.currentTarget;
       node.setPointerCapture(e.pointerId);
-      node.classList.add("grabbed");
       const scroller = list.closest(".modal-body");
-      drag = { i, node, scroller, startY: e.clientY, y: e.clientY, startScroll: scroller.scrollTop, gap: -1 };
-      node.addEventListener("pointermove", ev => { if (drag) { drag.y = ev.clientY; follow(); } });
+      drag = { i, node, scroller, startY: e.clientY, y: e.clientY, startScroll: scroller.scrollTop, gap: -1, moved: false };
+      node.addEventListener("pointermove", ev => {
+        if (!drag) return;
+        drag.y = ev.clientY;
+        if (!drag.moved) {
+          if (Math.abs(drag.y - drag.startY) < TAP_SLOP_PX) return;
+          lift();
+        }
+        follow();
+      });
       node.addEventListener("pointerup", drop);
       node.addEventListener("pointercancel", () => draw());
+    }
+    // The press has turned into a drag: any capsule picked with a tap is put back.
+    function lift() {
+      drag.moved = true;
+      selected = -1;
+      capsules().forEach(c => c.classList.remove("selected"));
+      drag.node.classList.add("grabbed");
       drag.frame = requestAnimationFrame(autoScroll);
+    }
+    // The first tap picks a capsule, tapping it again puts it back, and tapping another swaps the two.
+    function tap(i) {
+      if (selected < 0) selected = i;
+      else if (selected === i) selected = -1;
+      else {
+        [order[selected], order[i]] = [order[i], order[selected]];
+        selected = -1;
+        if (arranged()) return;
+      }
+      draw();
+    }
+    // After every move: a timed prayer passes as soon as it is in order.
+    function arranged() {
+      feedback.textContent = "";
+      if (!penance && R.isInOrder(order, prayer.segments)) {
+        passed();
+        return true;
+      }
+      return false;
     }
     function capsules() {
       return [...list.children].filter(c => c.classList.contains("capsule"));
@@ -650,18 +689,19 @@
     }
     function drop() {
       if (!drag) return;
-      const { i, gap } = drag;
+      const { i, gap, moved } = drag;
       endDrag();
+      if (!moved) return tap(i);
       if (gap >= 0) {
         const [text] = order.splice(i, 1);
         order.splice(gap > i ? gap - 1 : gap, 0, text);
-        feedback.textContent = "";
-        if (!penance && R.isInOrder(order, prayer.segments)) return passed();
+        if (arranged()) return;
       }
       draw();
     }
     function passed() {
       over = true;
+      selected = -1;
       playSound("passed_challenge");
       giveUpBtn.disabled = true;
       stopTimer(timer);
@@ -681,33 +721,31 @@
       actions.replaceChildren(next);
       next.focus({ preventScroll: true });
     }
-    // Giving up (spec 8.4) moves straight on to the next prayer in the deck: for a Prayer Challenge it
-    // counts as missed, like running out of time; for penance it just changes the prayer.
-    function giveUp() {
-      if (over) return;
+    // When time runs out or the player gives up (spec 8.4), the prayer is shown in its right order. For a
+    // Prayer Challenge it counts as missed; for penance there is no penalty. The next prayer in the deck is
+    // drawn and saved at once, so leaving and coming back cannot retry the prayer just shown.
+    function showAnswer(message) {
       over = true;
       stopTimer(timer);
       if (!penance) R.prayerMissed(state);
       state.challenge = { kind: "prayer", prayer: R.drawPrayer(state, DATA, options.easyPrayers, rng), penance };
       saveGame();
       renderHud();
-      openChallenge();
-    }
-    function timeUp() {
-      over = true;
-      giveUpBtn.disabled = true;
-      R.prayerMissed(state);
-      saveGame();
-      renderHud();
+      selected = -1;
+      order.splice(0, order.length, ...prayer.segments);
       draw();
       list.classList.add("over");
       feedback.className = "feedback bad";
-      feedback.textContent = "Time's up.";
-      actions.replaceChildren(button("Try another prayer", () => {
-        state.challenge = { kind: "prayer", prayer: R.drawPrayer(state, DATA, options.easyPrayers, rng), penance: false };
-        saveGame();
-        openChallenge();
-      }, "primary"));
+      feedback.textContent = message;
+      const next = button("Try another prayer", () => openChallenge(), "primary");
+      actions.replaceChildren(next);
+      next.focus({ preventScroll: true });
+    }
+    function giveUp() {
+      if (!over) showAnswer("Here is the prayer in the right order.");
+    }
+    function timeUp() {
+      showAnswer("Time's up. Here is the prayer in the right order.");
     }
     function submit() {
       if (over) return;
@@ -717,6 +755,7 @@
         return;
       }
       over = true;
+      selected = -1;
       draw();
       list.classList.add("done", "over");
       submitBtn.disabled = true;

@@ -246,29 +246,22 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         afterMove(move) { nextChallenge() }
     }
 
-    fun prayerTimedOut() {
+    /**
+     * Spec 8.4: when time runs out or the player gives up, the prayer is shown in its right order. For a Prayer
+     * Challenge it counts as missed; for penance there is no penalty. The next prayer in the deck is drawn and
+     * saved at once, so leaving and coming back cannot retry the prayer just shown.
+     */
+    fun prayerMissed(penance: Boolean) {
         val g = game ?: return
-        Rules.prayerMissed(g)
+        if (!penance) Rules.prayerMissed(g)
+        g.challenge = Challenge.Prayer(Rules.drawPrayer(g, data, options.easyPrayers, random), penance)
         save()
         version++
     }
 
-    fun tryAnotherPrayer() = nextPrayer(penance = false)
-
-    /**
-     * Spec 8.4: giving up moves straight on to the next prayer in the deck. For a Prayer Challenge it counts
-     * as missed, like running out of time; for penance it just changes the prayer.
-     */
-    fun giveUpPrayer(penance: Boolean) {
-        val g = game ?: return
-        if (!penance) Rules.prayerMissed(g)
-        version++
-        nextPrayer(penance)
-    }
-
-    private fun nextPrayer(penance: Boolean) {
-        val g = game ?: return
-        openChallenge(Challenge.Prayer(Rules.drawPrayer(g, data, options.easyPrayers, random), penance))
+    /** Opens the prayer that prayerMissed drew. */
+    fun tryAnotherPrayer() {
+        openChallenge(game?.challenge ?: return)
     }
 
     fun penanceCompleted() {

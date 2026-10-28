@@ -12,6 +12,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.fillMaxSize
@@ -564,8 +565,8 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
             Heading(if (penance) "Penance" else "Prayer Challenge")
             Text(prayerSize(vm.data.prayers[prayerIndex], penance), fontWeight = FontWeight.Bold)
             Text(
-                if (penance) "Drag each line to where it belongs, then tap Submit. When it is right, you will be restored to the fifth decade."
-                else "Put the prayer in the right order before time runs out. Drag each line to where it belongs.",
+                if (penance) "Drag each line to where it belongs, or tap two lines to swap them, then tap Submit. When it is right, you will be restored to the fifth decade."
+                else "Put the prayer in the right order before time runs out. Drag each line to where it belongs, or tap two lines to swap them.",
             )
             if (!penance) Text("Pray it in Latin to skip ahead five beads.", fontStyle = FontStyle.Italic)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -581,25 +582,34 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
     var state by remember { mutableStateOf(PrayerState.ARRANGING) }
     var feedback by remember { mutableStateOf("") }
     val countdown = remember { Countdown(Rules.prayerSeconds(prayer.segments.size)) }
+
+    // Spec 8.4: when time runs out or the player gives up, the prayer is shown in its right order.
+    fun showAnswer(message: String) {
+        countdown.running = false
+        state = PrayerState.MISSED
+        feedback = message
+        order.clear()
+        order.addAll(prayer.segments)
+        vm.prayerMissed(penance)
+    }
     DisposableEffect(Unit) {
         vm.fullScreen = true
         onDispose { vm.fullScreen = false }
     }
     if (!penance) {
         RunCountdown(countdown, vm) {
-            if (state == PrayerState.ARRANGING) {
-                state = PrayerState.TIMED_OUT
-                vm.prayerTimedOut()
-            }
+            if (state == PrayerState.ARRANGING) showAnswer("Time's up. Here is the prayer in the right order.")
         }
     }
     if (state == PrayerState.PASSED && !penance) {
         LaunchedEffect(Unit) { vm.gloryPrayerCompleted(latin = chosen == "latin") }
     }
 
-    // Drag and drop (spec 8.2). Positions are in the capsule list's own coordinates, which scrolling does
-    // not change: the held capsule is drawn dragOffset below its place, and the finger is at grabY + dragOffset.
+    // Drag and drop, or tap two capsules to swap them (spec 8.2). Positions are in the capsule list's own
+    // coordinates, which scrolling does not change: the held capsule is drawn dragOffset below its place, and
+    // the finger is at grabY + dragOffset.
     var held by remember { mutableIntStateOf(-1) }
+    var selected by remember { mutableIntStateOf(-1) }
     var grabY by remember { mutableFloatStateOf(0f) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
     var dropGap by remember { mutableIntStateOf(-1) }
@@ -615,6 +625,10 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
     // The gap the held capsule would drop into: before the first other capsule whose middle is below the
     // finger. The gaps on either side of the held capsule change nothing, so they show no line.
     fun findGap() {
+        if (held < 0) {
+            dropGap = -1
+            return
+        }
         val y = grabY + dragOffset
         var gap = order.size
         for (k in order.indices) {
@@ -627,12 +641,23 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
         }
         dropGap = if (gap == held || gap == held + 1) -1 else gap
     }
-    fun grab(i: Int, y: Float) {
+    // A press becomes a drag once the finger has moved a little; any capsule picked with a tap is put back.
+    fun grab(i: Int, y: Float, moved: Float) {
+        selected = -1
         held = i
         grabY = (bounds[i]?.first ?: 0f) + y
-        dragOffset = 0f
+        dragOffset = moved
         dropGap = -1
+        findGap()
         scope.launch { shudder.animateTo(0f, SHUDDER) }
+    }
+    // After every move: a timed prayer passes as soon as it is in order.
+    fun arranged() {
+        feedback = ""
+        if (!penance && Rules.isInOrder(order, prayer.segments)) {
+            countdown.running = false
+            state = PrayerState.PASSED
+        }
     }
     fun drop() {
         val from = held
@@ -642,10 +667,23 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
         dragOffset = 0f
         if (gap < 0 || state != PrayerState.ARRANGING) return
         order.add(if (gap > from) gap - 1 else gap, order.removeAt(from))
-        feedback = ""
-        if (!penance && Rules.isInOrder(order, prayer.segments)) {
-            countdown.running = false
-            state = PrayerState.PASSED
+        arranged()
+    }
+    // The first tap picks a capsule, tapping it again puts it back, and tapping another swaps the two.
+    fun tap(i: Int) {
+        if (state != PrayerState.ARRANGING) return
+        val first = selected
+        when (first) {
+            -1 -> {
+                selected = i
+                scope.launch { shudder.animateTo(0f, SHUDDER) }
+            }
+            i -> selected = -1
+            else -> {
+                order[first] = order[i].also { order[i] = order[first] }
+                selected = -1
+                arranged()
+            }
         }
     }
     // When the prayer is over, bring Continue (or Try another prayer) into view below a long list.
@@ -685,10 +723,11 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
             ) {
                 order.forEachIndexed { i, text ->
                     val isHeld = i == held
+                    val isSelected = i == selected && state == PrayerState.ARRANGING
                     Capsule(
                         text = text,
                         passed = state == PrayerState.PASSED,
-                        held = isHeld,
+                        held = isHeld || isSelected,
                         // The pointer handler and the bounds come before the layer, so moving the held
                         // capsule does not move the coordinates the finger is measured in.
                         modifier = Modifier
@@ -697,8 +736,14 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
                                     val down = awaitFirstDown()
                                     if (state != PrayerState.ARRANGING) return@awaitEachGesture
                                     down.consume()
-                                    grab(i, down.position.y)
-                                    val completed = drag(down.id) { change ->
+                                    val start = awaitTouchSlopOrCancellation(down.id) { change, _ -> change.consume() }
+                                    if (start == null) {
+                                        // Let go before moving: a tap.
+                                        if (currentEvent.changes.none { it.pressed }) tap(i)
+                                        return@awaitEachGesture
+                                    }
+                                    grab(i, down.position.y, start.position.y - down.position.y)
+                                    val completed = drag(start.id) { change ->
                                         dragOffset += change.positionChange().y
                                         change.consume()
                                         findGap()
@@ -713,6 +758,7 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
                             .onGloballyPositioned { c -> bounds[i] = c.positionInParent().y.let { it to it + c.size.height } }
                             .zIndex(if (isHeld) 1f else 0f)
                             .graphicsLayer {
+                                if (isSelected) rotationZ = shudder.value
                                 if (isHeld) {
                                     translationY = dragOffset
                                     rotationZ = shudder.value
@@ -756,8 +802,7 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
             PrayerState.ARRANGING -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     GameButton("Give Up", {
-                        countdown.running = false
-                        vm.giveUpPrayer(penance)
+                        if (state == PrayerState.ARRANGING) showAnswer("Here is the prayer in the right order.")
                     }, modifier = Modifier.weight(1f))
                     if (penance) {
                         GameButton("Submit", {
@@ -776,15 +821,15 @@ private fun PrayerContent(vm: GameViewModel, prayerIndex: Int, penance: Boolean)
                 Feedback(if (penance) "Correct! Your penance is complete." else "Well done!", good = true)
                 GameButton("Continue", { if (penance) vm.penanceCompleted() else vm.continueAfterPrayer() }, style = ButtonStyle.PRIMARY)
             }
-            PrayerState.TIMED_OUT -> {
-                Feedback("Time's up.", good = false)
+            PrayerState.MISSED -> {
+                Feedback(feedback, good = false)
                 GameButton("Try another prayer", { vm.tryAnotherPrayer() }, style = ButtonStyle.PRIMARY)
             }
         }
     }
 }
 
-private enum class PrayerState { ARRANGING, PASSED, TIMED_OUT }
+private enum class PrayerState { ARRANGING, PASSED, MISSED }
 
 private val FULL_SCREEN_MAX_WIDTH = 760.dp
 private val CAPSULE_GAP = 5.dp
@@ -801,7 +846,7 @@ private val SHUDDER: AnimationSpec<Float> = keyframes {
     0.7f at 240
 }
 
-/** One prayer segment, dragged into place (spec 8.2). */
+/** One prayer segment, dragged into place or swapped with another by tapping both (spec 8.2). */
 @Composable
 private fun Capsule(text: String, passed: Boolean, held: Boolean, modifier: Modifier) {
     val (background, border, textColor) = when {
