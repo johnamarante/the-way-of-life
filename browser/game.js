@@ -957,6 +957,8 @@
     showPanel(
       el("h2", {}, "About"),
       el("p", {}, "The Way of Life is a game of the Catholic faith. Climb the rosary from the waters of Baptism to the Cross: answer catechism questions, name the saints, pray in English or Latin, and face a moral choice at the summit."),
+      el("p", {}, "The game collects no personal data. ",
+        el("a", { href: "https://johnamarante.github.io/the-way-of-life/privacy.html", target: "_blank", rel: "noopener" }, "Privacy policy")),
       el("p", {}, "Portrait credits (Creative Commons images from Wikimedia Commons):"),
       el("ul", { class: "credits" }, DATA.credits.map(c => el("li", {},
         `${c.saint}: `, el("a", { href: c.url, target: "_blank", rel: "noopener" }, c.image), ` (${c.license})`))),

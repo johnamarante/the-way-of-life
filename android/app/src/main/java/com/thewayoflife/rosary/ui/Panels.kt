@@ -229,12 +229,18 @@ private fun OptionRow(label: String, selected: Boolean, onSelect: () -> Unit) {
     }
 }
 
+private const val PRIVACY_URL = "https://johnamarante.github.io/the-way-of-life/privacy.html"
+
 @Composable
 fun AboutPanel(vm: GameViewModel) = Panel {
     SectionTitle("About")
     Text("The Way of Life is a game of the Catholic faith. Climb the rosary from the waters of Baptism to the Cross: answer catechism questions, name the saints, pray in English or Latin, and face a moral choice at the summit.")
-    Text("Portrait credits (Creative Commons images from Wikimedia Commons):")
     val linkStyle = TextLinkStyles(SpanStyle(color = androidx.compose.ui.graphics.Color(0xFF6B4A06), textDecoration = TextDecoration.Underline))
+    Text(buildAnnotatedString {
+        append("The game collects no personal data. ")
+        withLink(LinkAnnotation.Url(PRIVACY_URL, linkStyle)) { append("Privacy policy") }
+    })
+    Text("Portrait credits (Creative Commons images from Wikimedia Commons):")
     vm.data.credits.forEach { c ->
         Text(buildAnnotatedString {
             append("${c.saint}: ")
