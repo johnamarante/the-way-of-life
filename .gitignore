@@ -18,6 +18,12 @@ portraits/*.part
 # Source material that is not ours to publish (the Catechism text is copyrighted)
 Catechism of the Catholic Church - USCCB.pdf
 
+# Google Play upload key and its password: never commit these
+android/upload-key.jks
+android/keystore.properties
+*.jks
+*.keystore
+
 # Playtester feedback (contains personal email addresses)
 feedback_*.pdf
 user-screen-caps/
