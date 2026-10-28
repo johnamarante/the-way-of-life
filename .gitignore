@@ -27,6 +27,7 @@ android/keystore.properties
 # Playtester feedback (contains personal email addresses)
 feedback_*.pdf
 user-screen-caps/
+android_screencaps/
 
 # Python
 __pycache__/
