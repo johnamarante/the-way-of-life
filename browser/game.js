@@ -801,12 +801,15 @@
       buttons[choices.indexOf(d.right)].classList.add("right");
       if (!right) buttons[choices.indexOf(text)].classList.add("wrong");
       if (right) addToCodex("dilemmas", d.id);
+      // The victory bells ring the moment the right choice is made and carry on into the victory screen
+      // (spec 13).
+      const sound = playSound(right ? "final_victory" : "question_wrong");
       result.append(
         el("p", { class: "feedback " + (right ? "good" : "bad") }, right
           ? "That is the right choice."
           : "That is not the right choice. Go to the confessional by the waters of Baptism to receive the Sacrament of Reconciliation and do penance."),
         teaching(d),
-        el("div", { class: "back-row" }, button("Continue", () => right ? victory() : penance(), "primary")));
+        el("div", { class: "back-row" }, button("Continue", () => right ? victory(sound) : penance(), "primary")));
       result.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     openModal(
@@ -832,9 +835,9 @@
     saveGame();
     animateFall(from, openChallenge);
   }
-  function victory() {
+  // `fanfare` is the victory music, already started when the right choice was made.
+  function victory(fanfare) {
     closeModal();
-    const fanfare = playSound("final_victory");
     const unlocks = R.codexUnlocks(state);
     const score = scoreText(state);
     codex.beaten = true;

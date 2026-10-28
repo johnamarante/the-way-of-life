@@ -271,7 +271,12 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     // The Cross (spec 9)
 
+    /**
+     * The victory bells ring the moment the right choice is made and carry on into the victory screen
+     * (spec 13); a wrong choice plays the wrong-answer sound.
+     */
     fun dilemmaAnswered(dilemmaId: Int, right: Boolean) {
+        sounds.play(if (right) Sound.VICTORY else Sound.QUESTION_WRONG)
         if (right) {
             codex.dilemmas.add(dilemmaId)
             saveCodex()
@@ -301,7 +306,6 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun victory() {
         val g = game ?: return
-        sounds.play(Sound.VICTORY)
         val unlocks = Rules.codexUnlocks(g)
         victoryPerfect = unlocks.perfect
         victoryCodex = Rules.codexMessages(unlocks)

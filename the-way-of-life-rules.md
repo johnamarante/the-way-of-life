@@ -436,7 +436,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.0") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.1") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
@@ -487,10 +487,10 @@ Five short sounds, kept in the `sounds/` folder; each file's name says when it p
 | File | Plays when |
 |---|---|
 | `question_answered_correctly.mp3` | a catechism question is answered correctly |
-| `question_wrong.mp3` | a catechism question is answered wrongly |
+| `question_wrong.mp3` | a catechism question is answered wrongly, or the wrong choice is made on the Moral Dilemma |
 | `passed_challenge.mp3` | a Prayer Challenge is completed or a Saint Challenge is won |
 | `pennance_complete.mp3` | the penance prayer is submitted correctly |
-| `final_victory.mp3` | the victory screen opens; it stops when the player leaves the victory screen |
+| `final_victory.mp3` | the right choice is made on the Moral Dilemma, the moment it is tapped; it carries on into the victory screen and stops when the player leaves the victory screen |
 
 - The browser build embeds the sounds in the page; the Android build copies them into the app's assets.
 - Browsers only play sound after the player has tapped or clicked, and every sound here follows a tap or click. On an iPhone the silent switch can mute them.
