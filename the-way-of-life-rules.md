@@ -111,7 +111,7 @@ The Cross is not a bead, so it is not in the `"beads"` list. The game needs a sp
 
 This is stored in `rosary_beads.json` (and its copy in the Android assets) as a separate top-level `"cross"` object with `index` 58, outside `"beads"`, so the bead count stays 58. The current Android and browser loaders read only the keys they need, so they ignore it until the game code uses it. When the player reaches the Cross, light it with the same glow as a bead, scaled to `r`. If the board art changes, re-measure this point along with the beads.
 
-**Lighting up.** When a bead or the Cross lights up, a white sunburst plays over it for about a second: a flash grows from it and fades while small white sparks fly outward in a ring, slow down, drift down a little and fade, leaving the lit bead. Glory beads and the Cross get the same burst. When several beads light at once (a Latin prayer skips five), each one bursts; on a longer jump (restored to Decade 5 after penance) only the new bead does. There is no burst when the board first shows or when beads go out.
+**Lighting up.** When a bead or the Cross lights up, a white sunburst plays over it for about a second: a flash grows from it and fades while small white sparks fly outward in a ring, slow down, drift down a little and fade, leaving the lit bead. Glory beads and the Cross get the same burst. When several beads light at once (a Latin prayer skips five), each one bursts; on a longer jump (restored to Decade 5 after penance) only the new bead does. After a right answer to a catechism question, the next bead lights up and bursts at the same moment as the right-answer sound, before the pause that moves the view to it. There is no burst when the board first shows or when beads go out.
 
 ### 2.3 Decades for saint card purposes
 
@@ -464,7 +464,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.10") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.11") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.

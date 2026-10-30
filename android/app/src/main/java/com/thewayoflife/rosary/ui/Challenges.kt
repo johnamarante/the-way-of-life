@@ -424,7 +424,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
                 picked = text
                 vm.cardsUsable = false
                 vm.sounds.play(if (text == q.correct) Sound.QUESTION_RIGHT else Sound.QUESTION_WRONG)
-                if (text != q.correct) vm.answeredWrongly()
+                if (text == q.correct) vm.lightNextBead() else vm.answeredWrongly()
             }, style = style, enabled = !answered)
         }
         if (answered) {

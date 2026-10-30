@@ -431,6 +431,8 @@
       if (text === q.correct) {
         right.classList.add("right");
         playSound("question_answered_correctly");
+        // The next bead lights up (with its sunburst) with the sound; the view moves to it after the pause.
+        renderBoard(state.position + 1, state.position);
         feedback.textContent = "Correct!";
         feedback.className = "feedback good";
         addToCodex("questions", q.id);

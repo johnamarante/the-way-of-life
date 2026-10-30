@@ -177,6 +177,12 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** The next bead lights up (with its sunburst) with the right-answer sound; the view moves to it after the pause. */
+    fun lightNextBead() {
+        val g = game ?: return
+        litUpTo = maxOf(litUpTo, g.position + 1)
+    }
+
     fun answeredWrongly() {
         val g = game ?: return
         Rules.answerWrong(g)
