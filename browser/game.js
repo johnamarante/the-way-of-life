@@ -6,6 +6,7 @@
   const R = window.Rules;
   const DATA = window.GAME_DATA;
   const PORTRAITS = window.PORTRAITS;
+  const OBJECT_PICTURES = window.OBJECT_PICTURES || {};
   const SOUNDS = window.SOUNDS || {};
   const rng = Math.random;
 
@@ -364,6 +365,9 @@
   function openQuestion(qIndex) {
     const q = DATA.questions[qIndex];
     const choices = q.trueFalse ? q.options.slice() : R.shuffle(q.options, rng);
+    // "What is this?" questions show one of several photos of the object (spec 4.5).
+    const picture = q.pictures.length ? q.pictures[Math.floor(rng() * q.pictures.length)] : null;
+    const pictureImg = () => picture ? el("img", { class: "portrait", src: OBJECT_PICTURES[picture], alt: "Picture for the question" }) : null;
     const feedback = el("p", { class: "feedback" });
     const buttons = choices.map(text => button(text, () => choose(text)));
     const extra = el("div");
@@ -421,6 +425,7 @@
         el("img", { class: "portrait", src: PORTRAITS[saint.portrait], alt: name }),
         el("p", { class: "invocation" }, saint.invocation),
         el("p", {}, q.question),
+        pictureImg(),
         el("div", { class: "answer-note" }, el("strong", {}, q.correct), el("br"), q.answer),
         button("Continue", () => {
           closeModal();
@@ -432,6 +437,7 @@
     openModal(
       el("p", { class: "kicker" }, beadLabel(state.position)),
       el("h2", {}, q.question),
+      pictureImg(),
       el("div", { class: "stack" }, buttons),
       feedback,
       extra);
@@ -959,9 +965,9 @@
       el("p", {}, "The Way of Life is a game of the Catholic faith. Climb the rosary from the waters of Baptism to the Cross: answer catechism questions, name the saints, pray in English or Latin, and face a moral choice at the summit."),
       el("p", {}, "The game collects no personal data. ",
         el("a", { href: "https://johnamarante.github.io/the-way-of-life/privacy.html", target: "_blank", rel: "noopener" }, "Privacy policy")),
-      el("p", {}, "Portrait credits (Creative Commons images from Wikimedia Commons):"),
+      el("p", {}, "Picture credits (Creative Commons images from Wikimedia Commons):"),
       el("ul", { class: "credits" }, DATA.credits.map(c => el("li", {},
-        `${c.saint}: `, el("a", { href: c.url, target: "_blank", rel: "noopener" }, c.image), ` (${c.license})`))),
+        `${c.subject}: `, el("a", { href: c.url, target: "_blank", rel: "noopener" }, c.image), ` (${c.license})`))),
       el("div", { class: "back-row" }, button("Back", showMenu)));
   }
 
@@ -1003,7 +1009,10 @@
       const normal = DATA.questions.filter(q => !q.advanced);
       const advanced = DATA.questions.filter(q => q.advanced);
       count = `${normal.length} questions, ${advanced.length} advanced questions`;
-      const show = q => list.append(entry(true, q.question, el("p", {}, q.answer)));
+      const show = q => list.append(q.pictures.length
+        ? entry(true, [el("img", { class: "thumb", src: OBJECT_PICTURES[q.pictures[0]], alt: "" }), q.correct],
+          el("div", {}, el("div", { class: "picture-row" }, q.pictures.map(p => el("img", { src: OBJECT_PICTURES[p], alt: q.correct }))), el("p", {}, q.answer)))
+        : entry(true, q.question, el("p", {}, q.answer)));
       normal.forEach(show);
       if (advanced.length) list.append(el("h3", { class: "codex-heading" }, "Advanced questions"));
       advanced.forEach(show);

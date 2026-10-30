@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ANDROID_ASSETS = ROOT / "android" / "app" / "src" / "main" / "assets"
+OBJECTS = ROOT / "objects"
 FILLER = {"st", "saint", "of", "the", "and"}
 
 
@@ -57,10 +58,12 @@ def display_name(name):
 
 def build_questions():
     """Normal questions (St. Joseph catechism) first, then the advanced set from the Catechism of the
-    Catholic Church (spec 4.1, 11.2). Normal question numbers stay below 1000, advanced ones start at 1001,
-    so ids never collide and saved games keep pointing at the same questions."""
+    Catholic Church (spec 4.1, 11.2), then the "What is this?" picture questions from both files (spec 4.5),
+    so adding pictures never shifts the place of an older question in a saved game. Normal question numbers
+    stay below 1000, advanced ones start at 1001, so ids never collide."""
     questions = read_questions("St_Joseph_First_Communion_Catechism_Quiz.csv", advanced=False)
     questions += read_questions("Catechism_Advanced_Questions.csv", advanced=True)
+    questions = [q for q in questions if not q["pictures"]] + [q for q in questions if q["pictures"]]
     ids = [q["id"] for q in questions]
     assert len(ids) == len(set(ids)), "question numbers must be unique"
     assert all((q["id"] > 1000) == q["advanced"] for q in questions), "advanced questions are numbered from 1001"
@@ -78,6 +81,7 @@ def read_questions(name, advanced):
         else:
             options = [row[f"Answer {c}"].strip() for c in "ABCD"]
             correct = row[f"Answer {letter}"].strip()
+        picture = row.get("Picture", "").strip()
         questions.append({
             "id": int(row["Number"]),
             "question": row["Question"].strip(),
@@ -86,8 +90,18 @@ def read_questions(name, advanced):
             "correct": correct,
             "trueFalse": true_false,
             "advanced": advanced,
+            # Spec 4.5: one of these photos of the object is shown, picked at random each time.
+            "pictures": object_pictures(picture) if picture else [],
         })
     return questions
+
+
+def object_pictures(name):
+    """Photos of an object in objects/, named after it: "Brown Scapular" -> brown_scapular-1.jpg, -2.jpg..."""
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    files = sorted(p.name for p in OBJECTS.glob(f"{slug}-*.jpg"))
+    assert 2 <= len(files) <= 5, f"{name}: needs 2 to 5 pictures named objects/{slug}-<n>.jpg, found {len(files)}"
+    return files
 
 
 def build_saints():
@@ -153,13 +167,15 @@ def build_equivalents():
 
 
 def build_credits():
-    """Portraits under Creative Commons licenses that need a credit line (from saint_portrait_sources.md)."""
+    """Portraits and object pictures under Creative Commons licenses that need a credit line (from
+    saint_portrait_sources.md and object_picture_sources.md)."""
     credits = []
     row = re.compile(r"^\|\s*\d+\s*\|\s*([^|]+?)\s*\|[^|]*\|\s*\[([^\]]*)\]\(([^)]+)\)\s*\|[^|]*\|\s*([^|]+?)\s*\|\s*Yes\s*\|")
-    for line in (ROOT / "saint_portrait_sources.md").read_text(encoding="utf-8").splitlines():
-        m = row.match(line)
-        if m:
-            credits.append({"saint": m.group(1), "image": m.group(2), "url": m.group(3), "license": m.group(4)})
+    for name in ("saint_portrait_sources.md", "object_picture_sources.md"):
+        for line in (ROOT / name).read_text(encoding="utf-8").splitlines():
+            m = row.match(line)
+            if m:
+                credits.append({"subject": m.group(1), "image": m.group(2), "url": m.group(3), "license": m.group(4)})
     return credits
 
 
@@ -197,6 +213,11 @@ def main():
     portraits.mkdir(exist_ok=True)
     for saint in data["saints"]:
         shutil.copyfile(ROOT / "portraits" / saint["portrait"], portraits / saint["portrait"])
+    pictures = ANDROID_ASSETS / "objects"
+    pictures.mkdir(exist_ok=True)
+    for q in data["questions"]:
+        for picture in q["pictures"]:
+            shutil.copyfile(OBJECTS / picture, pictures / picture)
     # Sound effects (spec 13): the file name says when each one plays.
     sounds = ANDROID_ASSETS / "sounds"
     sounds.mkdir(exist_ok=True)
@@ -204,7 +225,7 @@ def main():
         shutil.copyfile(sound, sounds / sound.name)
     print(f"Wrote game-data.json: {len(data['questions'])} questions, {len(data['saints'])} saints, "
           f"{len(data['prayers'])} prayers, {len(data['dilemmas'])} dilemmas, {len(data['credits'])} credits; "
-          f"copied {len(data['saints'])} portraits.")
+          f"copied {len(data['saints'])} portraits and {sum(len(q['pictures']) for q in data['questions'])} object pictures.")
 
 
 if __name__ == "__main__":

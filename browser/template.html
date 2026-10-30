@@ -365,6 +365,8 @@
   .entry > summary::-webkit-details-marker { display: none; }
   .entry .body { padding: 0 12px 12px; }
   .entry.locked > summary { color: var(--ink-soft); font-style: italic; cursor: default; }
+  .picture-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 10px; }
+  .picture-row img { width: 6em; height: 6em; border-radius: 8px; border: 2px solid var(--line); }
   .entry img.thumb { width: 40px; height: 40px; border-radius: 6px; flex: none; }
   .thumb.blank { display: inline-flex; align-items: center; justify-content: center; background: #D9C9A0; color: #FFFDF6; font-size: 20px; }
   .prayer-text p { margin: 0 0 4px; }
@@ -441,6 +443,7 @@
 <div class="version" id="version" hidden>Version __VERSION__</div>
 <script>window.GAME_DATA = __GAME_DATA__;</script>
 <script>window.PORTRAITS = __PORTRAITS__;</script>
+<script>window.OBJECT_PICTURES = __OBJECT_PICTURES__;</script>
 <script>window.SOUNDS = __SOUNDS__;</script>
 <script>
 __RULES_JS__

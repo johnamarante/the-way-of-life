@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thewayoflife.rosary.BuildConfig
 import com.thewayoflife.rosary.data.Dilemma
+import com.thewayoflife.rosary.data.Question
 import com.thewayoflife.rosary.data.Saint
 import com.thewayoflife.rosary.game.ModalSize
 import com.thewayoflife.rosary.game.TextSize
@@ -240,10 +241,10 @@ fun AboutPanel(vm: GameViewModel) = Panel {
         append("The game collects no personal data. ")
         withLink(LinkAnnotation.Url(PRIVACY_URL, linkStyle)) { append("Privacy policy") }
     })
-    Text("Portrait credits (Creative Commons images from Wikimedia Commons):")
+    Text("Picture credits (Creative Commons images from Wikimedia Commons):")
     vm.data.credits.forEach { c ->
         Text(buildAnnotatedString {
-            append("${c.saint}: ")
+            append("${c.subject}: ")
             withLink(LinkAnnotation.Url(c.url, linkStyle)) { append(c.image) }
             append(" (${c.license})")
         }, fontSize = 15.sp)
@@ -330,9 +331,9 @@ fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
             }
             CodexTab.QUESTIONS -> {
                 val (advanced, normal) = data.questions.partition { it.advanced }
-                itemsIndexed(normal) { _, q -> Entry(open = true, title = q.question) { Text(q.answer) } }
+                itemsIndexed(normal) { _, q -> QuestionEntry(q) }
                 if (advanced.isNotEmpty()) item { Text("Advanced questions", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp)) }
-                itemsIndexed(advanced) { _, q -> Entry(open = true, title = q.question) { Text(q.answer) } }
+                itemsIndexed(advanced) { _, q -> QuestionEntry(q) }
             }
             CodexTab.DILEMMAS -> itemsIndexed(data.dilemmas) { _, d ->
                 val open = dilemmaOpen(d)
@@ -349,7 +350,27 @@ fun CodexPanel(vm: GameViewModel) = Panel(scrollable = false) {
 }
 
 @Composable
-private fun Entry(open: Boolean, title: String, portrait: String? = null, body: @Composable () -> Unit) {
+private fun QuestionEntry(q: Question) {
+    if (q.pictures.isEmpty()) {
+        Entry(open = true, title = q.question) { Text(q.answer) }
+        return
+    }
+    // "What is this?" questions are listed by the object's name, with all of its photos (spec 4.5).
+    Entry(open = true, title = q.correct, portrait = q.pictures.first(), folder = "objects") {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            q.pictures.forEach { p ->
+                val image = rememberPortrait(p, "objects")
+                Box(Modifier.size(56.dp).clip(RoundedCornerShape(6.dp)).background(Palette.line)) {
+                    if (image != null) Image(bitmap = image, contentDescription = q.correct, modifier = Modifier.size(56.dp))
+                }
+            }
+        }
+        Text(q.answer)
+    }
+}
+
+@Composable
+private fun Entry(open: Boolean, title: String, portrait: String? = null, folder: String = "portraits", body: @Composable () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(10.dp)
     Column(
@@ -364,7 +385,7 @@ private fun Entry(open: Boolean, title: String, portrait: String? = null, body: 
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (portrait != null) {
-                val image = rememberPortrait(portrait)
+                val image = rememberPortrait(portrait, folder)
                 Box(Modifier.size(40.dp).clip(RoundedCornerShape(6.dp)).background(Palette.line)) {
                     if (image != null) Image(bitmap = image, contentDescription = null, modifier = Modifier.size(40.dp))
                 }

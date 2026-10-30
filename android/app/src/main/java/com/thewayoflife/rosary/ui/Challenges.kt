@@ -331,8 +331,8 @@ private fun AnswerNote(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun Portrait(file: String, name: String) {
-    val image = rememberPortrait(file)
+private fun Portrait(file: String, name: String, folder: String = "portraits") {
+    val image = rememberPortrait(file, folder)
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Box(Modifier.size(160.dp).clip(RoundedCornerShape(10.dp)).border(2.dp, Palette.line, RoundedCornerShape(10.dp))) {
             if (image != null) Image(bitmap = image, contentDescription = name, modifier = Modifier.size(160.dp))
@@ -374,6 +374,8 @@ private fun RunCountdown(countdown: Countdown, vm: GameViewModel, onEnd: () -> U
 private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
     val q = vm.data.questions[qIndex]
     val choices = remember { if (q.trueFalse) q.options else q.options.shuffled() }
+    // "What is this?" questions show one of several photos of the object (spec 4.5).
+    val picture = remember { q.pictures.randomOrNull() }
     var picked by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { vm.cardsUsable = true }
     val invoked = vm.invokedCard
@@ -386,6 +388,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
             Portrait(saint.portrait, saint.name)
             Text(saint.invocation, fontSize = 22.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Text(q.question)
+            if (picture != null) Portrait(picture, "Picture for the question", folder = "objects")
             AnswerNote {
                 Text(q.correct, fontWeight = FontWeight.Bold)
                 Text(q.answer)
@@ -406,6 +409,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
     ModalBody {
         Kicker(Rules.beadLabel(position))
         Heading(q.question)
+        if (picture != null) Portrait(picture, "Picture for the question", folder = "objects")
         choices.forEach { text ->
             val style = when {
                 !answered -> ButtonStyle.NORMAL

@@ -1,0 +1,100 @@
+# Object Picture Sources
+
+Photos for the "What is this?" questions (rules section 4.5), from Wikimedia Commons, where every file has a free license. Each object has 2 to 5 photos, so the game can show a different one each time.
+
+**How to use:** the files are downloaded and letterboxed to 256 x 256 by `tools/PortraitFetcher`:
+
+```
+dotnet run --project tools/PortraitFetcher -- --sources object_picture_sources.md --out objects
+```
+
+The "Save as" name must stay `<object>-<n>.jpg`, with the object's name from the `Picture` column in lowercase and spaces or symbols as underscores (`Brown Scapular` is `brown_scapular-1.jpg`). That is how the build finds an object's photos.
+
+**Credit needed:** public domain and CC0 images need nothing. Images marked **Yes** are under CC BY or CC BY-SA and are credited on the About screen; CC BY-SA also means the 256 x 256 copy is shared under the same license.
+
+Licenses were read from Commons on 2026-10-30. Every photo was checked by eye to show the object clearly and only that object.
+
+| # | Object | Save as | Image | Size (px) | License | Credit needed | Notes |
+|---|---|---|---|---|---|---|---|
+| 1 | Monstrance | `monstrance-1.jpg` | [Custodia Iglesia Sn Ignacio](https://commons.wikimedia.org/wiki/File:Custodia_Iglesia_Sn_Ignacio.jpg) | 728 x 1388 | Public domain | No | |
+| 2 | Monstrance | `monstrance-2.jpg` | [Anónimo limeño - Custodia (Museo de Arte de Lima (MALI),...](https://commons.wikimedia.org/wiki/File:An%C3%B3nimo_lime%C3%B1o_-_Custodia_%28Museo_de_Arte_de_Lima_%28MALI%29,_Lima%29.jpg) | 1000 x 1000 | CC BY 4.0 | Yes | |
+| 3 | Monstrance | `monstrance-3.jpg` | [Custodia - Convento de San Carlos](https://commons.wikimedia.org/wiki/File:Custodia_-_Convento_de_San_Carlos.jpg) | 2508 x 3344 | CC BY-SA 4.0 | Yes | |
+| 4 | Monstrance | `monstrance-4.jpg` | [Eucharistic Adoration - Monstrance](https://commons.wikimedia.org/wiki/File:Eucharistic_Adoration_-_Monstrance.jpg) | 1944 x 2592 | CC BY-SA 3.0 | Yes | |
+| 5 | Tabernacle | `tabernacle-1.jpg` | [Kostel sv Vaclava Kostelec 012](https://commons.wikimedia.org/wiki/File:Kostel_sv_Vaclava_Kostelec_012.jpg) | 2288 x 3051 | CC BY 3.0 | Yes | |
+| 6 | Tabernacle | `tabernacle-2.jpg` | [Bg-0631 Kristus-Kralj-tabernakelj](https://commons.wikimedia.org/wiki/File:Bg-0631_Kristus-Kralj-tabernakelj.jpg) | 2976 x 3968 | CC BY 4.0 | Yes | |
+| 7 | Tabernacle | `tabernacle-3.jpg` | [G-Sakramentshaus-1](https://commons.wikimedia.org/wiki/File:G-Sakramentshaus-1.jpg) | 2979 x 3972 | CC BY-SA 3.0 | Yes | |
+| 8 | Ciborium | `ciborium-1.jpg` | [2006.10 Copón](https://commons.wikimedia.org/wiki/File:2006.10_Cop%C3%B3n.jpg) | 1383 x 1844 | CC BY-SA 3.0 | Yes | |
+| 9 | Ciborium | `ciborium-2.jpg` | [Ciborie (gruuthusemuseum) - anoniem - Musea Brugge - 1](https://commons.wikimedia.org/wiki/File:Ciborie_%28gruuthusemuseum%29_-_anoniem_-_Musea_Brugge_-_1.jpg) | 1500 x 2000 | Public domain | No | |
+| 10 | Ciborium | `ciborium-3.jpg` | [Ciborie van zilver met vergulding - Joseph Jacquemart - M...](https://commons.wikimedia.org/wiki/File:Ciborie_van_zilver_met_vergulding_-_Joseph_Jacquemart_-_Musea_Brugge_-_1.jpg) | 1500 x 2000 | Public domain | No | |
+| 11 | Pyx | `pyx-1.jpg` | [Bronze pyx](https://commons.wikimedia.org/wiki/File:Bronze_pyx.JPG) | 3264 x 2448 | CC BY-SA 3.0 | Yes | |
+| 12 | Pyx | `pyx-2.jpg` | [Pyx MET sf32-100-282s4](https://commons.wikimedia.org/wiki/File:Pyx_MET_sf32-100-282s4.jpg) | 2448 x 3264 | CC0 | No | |
+| 13 | Pyx | `pyx-3.jpg` | [Silver pyx MNMA Cl23528](https://commons.wikimedia.org/wiki/File:Silver_pyx_MNMA_Cl23528.jpg) | 1600 x 1680 | Public domain | No | |
+| 14 | Chalice | `chalice-1.jpg` | [Dom Martin, Kelk (1931), KBS-FRB 01](https://commons.wikimedia.org/wiki/File:Dom_Martin,_Kelk_%281931%29,_KBS-FRB_01.jpg) | 2835 x 3969 | CC BY-SA 4.0 | Yes | |
+| 15 | Chalice | `chalice-2.jpg` | [Chalice (Loreta) 01(js)](https://commons.wikimedia.org/wiki/File:Chalice_%28Loreta%29_01%28js%29.jpg) | 1588 x 2382 | CC BY-SA 3.0 | Yes | |
+| 16 | Chalice | `chalice-3.jpg` | [Calice Max Stölb 88275](https://commons.wikimedia.org/wiki/File:Calice_Max_St%C3%B6lb_88275.jpg) | 1592 x 3272 | CC BY-SA 4.0 | Yes | |
+| 17 | Chalice | `chalice-4.jpg` | [Sejny Muzeum kielich barokowy](https://commons.wikimedia.org/wiki/File:Sejny_Muzeum_kielich_barokowy.jpg) | 1361 x 2414 | CC BY-SA 3.0 | Yes | |
+| 18 | Paten | `paten-1.jpg` | [Kelk met pateen - Jacob Willaeys - Sint-Walburgakerk - 8](https://commons.wikimedia.org/wiki/File:Kelk_met_pateen_-_Jacob_Willaeys_-_Sint-Walburgakerk_-_8.jpg) | 1500 x 2000 | Public domain | No | |
+| 19 | Paten | `paten-2.jpg` | [Clevelandart 1990.3.2](https://commons.wikimedia.org/wiki/File:Clevelandart_1990.3.2.jpg) | 3400 x 3104 | CC0 | No | |
+| 20 | Paten | `paten-3.jpg` | [Valle del reno, patena per la comunione, 1490-1500 ca](https://commons.wikimedia.org/wiki/File:Valle_del_reno,_patena_per_la_comunione,_1490-1500_ca.jpg) | 1928 x 1952 | CC BY 3.0 | Yes | |
+| 21 | Paten | `paten-4.jpg` | [Byzantine - Paten - Walters 57644](https://commons.wikimedia.org/wiki/File:Byzantine_-_Paten_-_Walters_57644.jpg) | 1738 x 1800 | Public domain | No | |
+| 22 | Corporal | `corporal-1.jpg` | [Korporale in cruce salus (1)](https://commons.wikimedia.org/wiki/File:Korporale_in_cruce_salus_%281%29.jpg) | 2560 x 1920 | CC BY-SA 4.0 | Yes | |
+| 23 | Corporal | `corporal-2.jpg` | [Korporale in cruce salus (2)](https://commons.wikimedia.org/wiki/File:Korporale_in_cruce_salus_%282%29.jpg) | 2560 x 1920 | CC BY-SA 4.0 | Yes | |
+| 24 | Purificator | `purificator-1.jpg` | [Purificatorium on chalice](https://commons.wikimedia.org/wiki/File:Purificatorium_on_chalice.JPG) | 652 x 488 | CC BY-SA 3.0 | Yes | |
+| 25 | Purificator | `purificator-2.jpg` | [Purificator 3 Cieszyn Poland](https://commons.wikimedia.org/wiki/File:Purificator_3_Cieszyn_Poland.JPG) | 2816 x 2112 | CC BY-SA 4.0 | Yes | |
+| 26 | Cruets | `cruets-1.jpg` | [Ampułki (1) - SACROEXPO-2013-06-17](https://commons.wikimedia.org/wiki/File:Ampu%C5%82ki_%281%29_-_SACROEXPO-2013-06-17.jpg) | 3456 x 2304 | CC BY-SA 3.0 | Yes | |
+| 27 | Cruets | `cruets-2.jpg` | [MSM - Messkännchen einer Versehgarnitur](https://commons.wikimedia.org/wiki/File:MSM_-_Messk%C3%A4nnchen_einer_Versehgarnitur.jpg) | 3908 x 2568 | CC BY-SA 3.0 | Yes | |
+| 28 | Cruets | `cruets-3.jpg` | [Clermont (60), église Saint-Samson, burettes, verre et mé...](https://commons.wikimedia.org/wiki/File:Clermont_%2860%29,_%C3%A9glise_Saint-Samson,_burettes,_verre_et_m%C3%A9tal_dor%C3%A9,_XIXe_si%C3%A8cle_1.jpg) | 5184 x 3456 | CC BY-SA 4.0 | Yes | |
+| 29 | Cruets | `cruets-4.jpg` | [Meßkännchen, silber teilvergoldet](https://commons.wikimedia.org/wiki/File:Me%C3%9Fk%C3%A4nnchen,_silber_teilvergoldet.jpg) | 550 x 401 | CC BY-SA 3.0 | Yes | |
+| 30 | Censer | `censer-1.jpg` | [1470 - Cadelnita de argint aurit](https://commons.wikimedia.org/wiki/File:1470_-_Cadelnita_de_argint_aurit.jpg) | 500 x 600 | Public domain | No | |
+| 31 | Censer | `censer-2.jpg` | [Almunge kyrka rökelsekar 02](https://commons.wikimedia.org/wiki/File:Almunge_kyrka_r%C3%B6kelsekar_02.JPG) | 3264 x 4928 | CC BY-SA 3.0 | Yes | |
+| 32 | Censer | `censer-3.jpg` | [Botafumeiro](https://commons.wikimedia.org/wiki/File:Botafumeiro.JPG) | 600 x 783 | CC BY 3.0 | Yes | |
+| 33 | Censer | `censer-4.jpg` | [Antonio e paolo pini, turibolo, navicella e cucchiaio da...](https://commons.wikimedia.org/wiki/File:Antonio_e_paolo_pini,_turibolo,_navicella_e_cucchiaio_da_incenso,_1793,_in_rame_argentato_02.jpg) | 3060 x 3666 | CC BY-SA 4.0 | Yes | |
+| 34 | Aspergillum & Aspersorium | `aspergillum_aspersorium-1.jpg` | [Gaetano guadagni, secchiello e aspersorio, 1822, argento 01](https://commons.wikimedia.org/wiki/File:Gaetano_guadagni,_secchiello_e_aspersorio,_1822,_argento_01.JPG) | 2312 x 1613 | CC BY 3.0 | Yes | |
+| 35 | Aspergillum & Aspersorium | `aspergillum_aspersorium-2.jpg` | [Bottega toscana, secchiello per acqua benedetta e asperso...](https://commons.wikimedia.org/wiki/File:Bottega_toscana,_secchiello_per_acqua_benedetta_e_aspersorio,_in_metallo_argentato,_xx_secolo.jpg) | 2826 x 3840 | CC BY 3.0 | Yes | |
+| 36 | Aspergillum & Aspersorium | `aspergillum_aspersorium-3.jpg` | [Abraham pfleger (attr.), secchiello e aspersorio, augusta...](https://commons.wikimedia.org/wiki/File:Abraham_pfleger_%28attr.%29,_secchiello_e_aspersorio,_augusta_1577.jpg) | 1800 x 2127 | CC BY 3.0 | Yes | |
+| 37 | Crucifix | `crucifix-1.jpg` | [Christ janséniste](https://commons.wikimedia.org/wiki/File:Christ_jans%C3%A9niste.JPG) | 1536 x 2048 | Public domain | No | |
+| 38 | Crucifix | `crucifix-2.jpg` | [Art de tranché, 2](https://commons.wikimedia.org/wiki/File:Art_de_tranch%C3%A9,_2.jpg) | 4004 x 6000 | Public domain | No | |
+| 39 | Crucifix | `crucifix-3.jpg` | [Abuabu cross moulded 1928](https://commons.wikimedia.org/wiki/File:Abuabu_cross_moulded_1928.jpg) | 483 x 480 | CC BY-SA 4.0 | Yes | |
+| 40 | Crucifix | `crucifix-4.jpg` | [A wooden crucifix](https://commons.wikimedia.org/wiki/File:A_wooden_crucifix.jpg) | 6024 x 4024 | CC0 | No | |
+| 41 | Rosary | `rosary-1.jpg` | [Art de tranché, 1](https://commons.wikimedia.org/wiki/File:Art_de_tranch%C3%A9,_1.jpg) | 6000 x 4004 | Public domain | No | |
+| 42 | Rosary | `rosary-2.jpg` | [2023 Różaniec](https://commons.wikimedia.org/wiki/File:2023_R%C3%B3%C5%BCaniec.jpg) | 4416 x 2599 | CC BY-SA 4.0 | Yes | |
+| 43 | Rosary | `rosary-3.jpg` | [02014 Der Gebetskette-Rosenkranz aus Pimpernuß. Die beski...](https://commons.wikimedia.org/wiki/File:02014_Der_Gebetskette-Rosenkranz_aus_Pimpernu%C3%9F._Die_beskidische_Samenk%C3%B6rner_mit_Silberdraht_gefa%C3%9Ft..JPG) | 2947 x 2949 | CC BY-SA 4.0 | Yes | |
+| 44 | Brown Scapular | `brown_scapular-1.jpg` | [Brown scapular showing the Blessed Virgin of Mount Carmel...](https://commons.wikimedia.org/wiki/File:Brown_scapular_showing_the_Blessed_Virgin_of_Mount_Carmel,_E_Wellcome_L0058985.jpg) | 2716 x 4106 | CC BY 4.0 | Yes | |
+| 45 | Brown Scapular | `brown_scapular-2.jpg` | [Scapulaire nd mont carmel](https://commons.wikimedia.org/wiki/File:Scapulaire_nd_mont_carmel.jpg) | 2712 x 2640 | CC BY-SA 4.0 | Yes | |
+| 46 | Brown Scapular | `brown_scapular-3.jpg` | [Escapulariocafe](https://commons.wikimedia.org/wiki/File:Escapulariocafe.JPG) | 2318 x 1662 | CC BY-SA 3.0 | Yes | |
+| 47 | Miraculous Medal | `miraculous_medal-1.jpg` | [Miraculous medal](https://commons.wikimedia.org/wiki/File:Miraculous_medal.jpg) | 2540 x 1800 | CC BY-SA 3.0 | Yes | |
+| 48 | Miraculous Medal | `miraculous_medal-2.jpg` | [Miraculous medal (4)](https://commons.wikimedia.org/wiki/File:Miraculous_medal_%284%29.jpg) | 3388 x 2794 | CC0 | No | |
+| 49 | Miraculous Medal | `miraculous_medal-3.jpg` | [Miraculous medal (3)](https://commons.wikimedia.org/wiki/File:Miraculous_medal_%283%29.jpg) | 4025 x 3448 | CC0 | No | |
+| 50 | Medal of Saint Benedict | `medal_of_saint_benedict-1.jpg` | [Benediktusmedaille 2](https://commons.wikimedia.org/wiki/File:Benediktusmedaille_2.JPG) | 992 x 994 | Public domain | No | |
+| 51 | Medal of Saint Benedict | `medal_of_saint_benedict-2.jpg` | [Avers d'une médaille de Saint Benoît (juillet 2022)](https://commons.wikimedia.org/wiki/File:Avers_d'une_m%C3%A9daille_de_Saint_Beno%C3%AEt_%28juillet_2022%29.JPG) | 2178 x 2121 | CC0 | No | |
+| 52 | Medal of Saint Benedict | `medal_of_saint_benedict-3.jpg` | [Medalha de Sao Bento 2](https://commons.wikimedia.org/wiki/File:Medalha_de_Sao_Bento_2.jpg) | 4224 x 2816 | CC BY-SA 3.0 | Yes | |
+| 53 | Paschal candle | `paschal_candle-1.jpg` | [Basilica de Nra Sra de las Misericordias-Cirio Pascual-Sa...](https://commons.wikimedia.org/wiki/File:Basilica_de_Nra_Sra_de_las_Misericordias-Cirio_Pascual-Santa_Rosa_de_Osos.JPG) | 1536 x 2048 | CC BY-SA 2.5 | Yes | |
+| 54 | Paschal candle | `paschal_candle-2.jpg` | [Osterkerze Ostervigil 2023](https://commons.wikimedia.org/wiki/File:Osterkerze_Ostervigil_2023.jpg) | 2576 x 3872 | CC BY-SA 4.0 | Yes | |
+| 55 | Paschal candle | `paschal_candle-3.jpg` | [Asnières-sur-Oise (95), église Saint-Rémi, chandelier pascal](https://commons.wikimedia.org/wiki/File:Asni%C3%A8res-sur-Oise_%2895%29,_%C3%A9glise_Saint-R%C3%A9mi,_chandelier_pascal.JPG) | 2736 x 3648 | CC BY-SA 3.0 | Yes | |
+| 56 | Baptismal candle | `baptismal_candle-1.jpg` | [Vela en un bautismo católico](https://commons.wikimedia.org/wiki/File:Vela_en_un_bautismo_cat%C3%B3lico.JPG) | 5087 x 3456 | CC BY-SA 4.0 | Yes | |
+| 57 | Baptismal candle | `baptismal_candle-2.jpg` | [Taufkerze KreuzmitRosenranke](https://commons.wikimedia.org/wiki/File:Taufkerze_KreuzmitRosenranke.jpg) | 562 x 840 | CC BY 4.0 | Yes | |
+| 58 | Baptismal candle | `baptismal_candle-3.jpg` | [Taufkerze Sommer](https://commons.wikimedia.org/wiki/File:Taufkerze_Sommer.jpg) | 563 x 840 | CC BY 4.0 | Yes | |
+| 59 | Altar | `altar-1.jpg` | [Altar at Church of the Assumption, Thomastown](https://commons.wikimedia.org/wiki/File:Altar_at_Church_of_the_Assumption,_Thomastown.jpg) | 4032 x 2016 | CC BY-SA 4.0 | Yes | |
+| 60 | Altar | `altar-2.jpg` | [Dülmen, Heilig-Kreuz-Kirche, Altar -- 2019 -- 3113-7](https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_Heilig-Kreuz-Kirche,_Altar_--_2019_--_3113-7.jpg) | 6034 x 4479 | CC BY-SA 4.0 | Yes | |
+| 61 | Altar | `altar-3.jpg` | [Freistadt Pfarrkirche Nothelferaltar 01](https://commons.wikimedia.org/wiki/File:Freistadt_Pfarrkirche_Nothelferaltar_01.jpg) | 3723 x 5585 | CC BY-SA 4.0 | Yes | |
+| 62 | Ambo | `ambo-1.jpg` | [Gumpersdorf St Ursulastr Kirche StUrsula 015 201509 333](https://commons.wikimedia.org/wiki/File:Gumpersdorf_St_Ursulastr_Kirche_StUrsula_015_201509_333.JPG) | 3240 x 4320 | CC BY-SA 4.0 | Yes | |
+| 63 | Ambo | `ambo-2.jpg` | [Emmerichskirche Ambo](https://commons.wikimedia.org/wiki/File:Emmerichskirche_Ambo.jpg) | 3024 x 4032 | CC0 | No | |
+| 64 | Ambo | `ambo-3.jpg` | [Catedral de Medellín-Ambon](https://commons.wikimedia.org/wiki/File:Catedral_de_Medell%C3%ADn-Ambon.JPG) | 1944 x 2246 | CC BY-SA 2.5 | Yes | |
+| 65 | Ambo | `ambo-4.jpg` | [Basilica of St. Michael the Archangel - Loretto, Pennsylv...](https://commons.wikimedia.org/wiki/File:Basilica_of_St._Michael_the_Archangel_-_Loretto,_Pennsylvania_12.jpg) | 4608 x 3456 | CC BY-SA 4.0 | Yes | |
+| 66 | Mitre | `mitre-1.jpg` | [Gebhardsmitra](https://commons.wikimedia.org/wiki/File:Gebhardsmitra.jpg) | 567 x 716 | CC BY-SA 3.0 | Yes | |
+| 67 | Mitre | `mitre-2.jpg` | [Mitre Pierre Simon de Dreux-Brézé Moulins](https://commons.wikimedia.org/wiki/File:Mitre_Pierre_Simon_de_Dreux-Br%C3%A9z%C3%A9_Moulins.jpg) | 5081 x 7621 | Public domain | No | |
+| 68 | Mitre | `mitre-3.jpg` | [Late nineteenth century mitre in the treasury of the Cath...](https://commons.wikimedia.org/wiki/File:Late_nineteenth_century_mitre_in_the_treasury_of_the_Cathedral_of_Trier.jpg) | 1173 x 1371 | CC0 | No | |
+| 69 | Mitre | `mitre-4.jpg` | [Thierry Jordan 06713 (cropped)](https://commons.wikimedia.org/wiki/File:Thierry_Jordan_06713_%28cropped%29.jpg) | 2730 x 2721 | CC BY-SA 3.0 | Yes | |
+| 70 | Stole | `stole-1.jpg` | [Vavřinec Skýpala, Sv. Maří, 2017 (01)](https://commons.wikimedia.org/wiki/File:Vav%C5%99inec_Sk%C3%BDpala,_Sv._Ma%C5%99%C3%AD,_2017_%2801%29.jpg) | 753 x 1065 | CC BY-SA 4.0 | Yes | |
+| 71 | Stole | `stole-2.jpg` | [Leonas Kalinauskas](https://commons.wikimedia.org/wiki/File:Leonas_Kalinauskas.JPG) | 768 x 1024 | CC BY-SA 3.0 | Yes | |
+| 72 | Vestments | `vestments-1.jpg` | [Casulas na Igreja do Carmo em Pirenópolis](https://commons.wikimedia.org/wiki/File:Casulas_na_Igreja_do_Carmo_em_Piren%C3%B3polis.jpg) | 3216 x 4288 | CC BY-SA 3.0 | Yes | |
+| 73 | Vestments | `vestments-2.jpg` | [130 C.H. de Vries](https://commons.wikimedia.org/wiki/File:130_C.H._de_Vries.jpg) | 515 x 786 | CC BY-SA 3.0 | Yes | |
+| 74 | Vestments | `vestments-3.jpg` | [Fr. Antony Sumich FSSP](https://commons.wikimedia.org/wiki/File:Fr._Antony_Sumich_FSSP.jpg) | 1500 x 1000 | CC BY-SA 4.0 | Yes | |
+| 75 | Vestments | `vestments-4.jpg` | [131 Chasuble Plouigneau](https://commons.wikimedia.org/wiki/File:131_Chasuble_Plouigneau.jpg) | 1512 x 2244 | CC BY-SA 4.0 | Yes | |
+| 76 | Confessional | `confessional-1.jpg` | [Kappelwindeck-St Maria-68-Beichtstuhl-2023-gje](https://commons.wikimedia.org/wiki/File:Kappelwindeck-St_Maria-68-Beichtstuhl-2023-gje.jpg) | 3072 x 3813 | CC BY 4.0 | Yes | |
+| 77 | Confessional | `confessional-2.jpg` | [St Blaise church in Limogne-en-Quercy 12](https://commons.wikimedia.org/wiki/File:St_Blaise_church_in_Limogne-en-Quercy_12.jpg) | 3563 x 4879 | CC BY-SA 4.0 | Yes | |
+| 78 | Confessional | `confessional-3.jpg` | [Confessional door open](https://commons.wikimedia.org/wiki/File:Confessional_door_open.jpg) | 2448 x 3264 | CC BY-SA 3.0 | Yes | |
+| 79 | Confessional | `confessional-4.jpg` | [St Maurice church in La Jonchere-St-Maurice 03](https://commons.wikimedia.org/wiki/File:St_Maurice_church_in_La_Jonchere-St-Maurice_03.jpg) | 3470 x 4940 | CC BY-SA 4.0 | Yes | |
+| 80 | Communion rail | `communion_rail-1.jpg` | [Kirche Unterdürnbach Kommunionbank](https://commons.wikimedia.org/wiki/File:Kirche_Unterd%C3%BCrnbach_Kommunionbank.jpg) | 3008 x 2000 | CC BY-SA 3.0 at | Yes | |
+| 81 | Communion rail | `communion_rail-2.jpg` | [KortenbosBasiliek, interieur02](https://commons.wikimedia.org/wiki/File:KortenbosBasiliek,_interieur02.jpg) | 2294 x 1249 | CC BY-SA 3.0 | Yes | |
+| 82 | Communion rail | `communion_rail-3.jpg` | [4897Religious of the Virgin Mary 04](https://commons.wikimedia.org/wiki/File:4897Religious_of_the_Virgin_Mary_04.jpg) | 4608 x 3456 | CC0 | No | |

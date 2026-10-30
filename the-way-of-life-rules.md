@@ -12,8 +12,8 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 
 | File | Rows | Columns used |
 |---|---|---|
-| `St_Joseph_First_Communion_Catechism_Quiz.csv` | 93 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer` |
-| `Catechism_Advanced_Questions.csv` | 289 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
+| `St_Joseph_First_Communion_Catechism_Quiz.csv` | 96 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer`, `Picture` |
+| `Catechism_Advanced_Questions.csv` | 311 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
 | `Catholic_Saints_Trivia.csv` | 209 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
 | `Catholic_Prayers_Segments.csv` | 30 (15 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
 | `Catholic_Moral_Dilemmas.csv` | 34 | `Number`, `Title`, `Age Level`, `Dilemma`, `Question`, `Right Choice`, `Wrong Choice`, `Catholic Answer`, `Key Principle`, `CCC References`, `Sources` |
@@ -21,6 +21,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 Notes on the data:
 
 - Catechism questions are either 4-option multiple choice or True/False. A question is True/False when `Answer C` and `Answer D` are empty; `Answer A` is `TRUE` and `Answer B` is `FALSE`. Display these as "True" and "False".
+- `Picture` is empty except on "What is this?" questions (Section 4.5), where it names the object shown. Its photos are in `objects/`, named after the object in lowercase with underscores and numbered: `Brown Scapular` uses `objects/brown_scapular-1.jpg`, `brown_scapular-2.jpg` and so on, 2 to 5 per object, each 256 x 256. Where each photo came from, and its license, is in `object_picture_sources.md`.
 - `Correct Answer` is a letter referring to the original column. Because options are shuffled (Section 4), track the correct option by its content, not its letter.
 - `Year Born` is a display string (for example `c. 50 BC`, `early 1st c.`, `1225`). Show it as-is; do not parse it. It is empty for the three archangels (Michael, Gabriel, Raphael), who were never born; when it is empty, show no birth year at all (no label, no placeholder).
 - English and Latin rows of the same prayer are adjacent in the file. Pair them by row order (row 2n is English, row 2n+1 is its Latin counterpart). Segment counts can differ between the two languages (the Act of Contrition has 11 in English and 12 in Latin).
@@ -148,8 +149,8 @@ The in-game bar shows the player's score for this game under the saint cards:
 ### 4.1 Selection
 
 - There are two sets of questions:
-  - **Normal questions:** the 93 in `St_Joseph_First_Communion_Catechism_Quiz.csv`. These are the 83 from the St. Joseph First Communion Catechism (revised in version 0.1.0 after a doctrinal review), plus 10 on the Mass and the Eucharist.
-  - **Advanced questions:** the 289 in `Catechism_Advanced_Questions.csv`, written from the Catechism of the Catholic Church. Every answer cites its CCC paragraph.
+  - **Normal questions:** the 96 in `St_Joseph_First_Communion_Catechism_Quiz.csv`. These are the 83 from the St. Joseph First Communion Catechism (revised in version 0.1.0 after a doctrinal review), plus 10 on the Mass and the Eucharist, plus 3 "What is this?" picture questions (Section 4.5).
+  - **Advanced questions:** the 311 in `Catechism_Advanced_Questions.csv`: 289 written from the Catechism of the Catholic Church, where every answer cites its CCC paragraph, plus 22 "What is this?" picture questions.
 - By default only normal questions are asked. With **Advanced questions** on (Section 11.2), both sets are mixed together at random.
 - The game keeps one shuffled deck of every question and draws from it without repeats, skipping advanced questions unless they are on. When the deck runs out, it is reshuffled and play continues. A deck saved before the question bank changed size is replaced with a new one.
 - Every question shown counts as used, whether it was answered correctly, answered wrongly, or passed with a saint card.
@@ -173,6 +174,15 @@ The in-game bar shows the player's score for this game under the saint cards:
 - Highlight the player's wrong choice and show the correct answer, including the full `Answer` sentence from the CSV.
 - Show a **Next** button. Tapping it draws a new random question for the same bead.
 - Reset the streak to 0.
+
+### 4.5 "What is this?" picture questions
+
+- These are ordinary questions in the two question files, drawn from the same deck on the same gray beads. The question is "What is this?", above a photo of a Catholic object (a monstrance, a rosary, a mitre and so on), with four answer buttons: the object's name and three wrong names that could pass for it.
+- **Normal:** tabernacle, rosary and crucifix. **Advanced:** the other 22 objects.
+- Each object has 2 to 5 different photos. Each time the question is shown, one is picked at random, so the player learns to recognize the kind of object, not one particular picture.
+- The explanation of what the object is (the `Answer` column) appears only after a wrong answer, as for every other question (Section 4.4). A right answer shows just "Correct!".
+- If a saint card is used instead (Section 7.2), the photo stays on screen with the right name and its explanation.
+- In the bank of questions, the picture questions come after all the others, so adding them did not change which question a saved game is on.
 
 ---
 
@@ -431,7 +441,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 - **Prayers:** always open, showing each prayer in English and Latin.
 - **Saints:** shows each saint the player has won a card for in a Saint Challenge in any game (name, portrait, birth year, all 10 clues). Locked saints show as a placeholder. **Every** saint opens after the player wins a perfect game (Section 3.1) with Prayers set to **All prayers** for the whole game; a single prayer drawn with Easy prayers on rules that game out. Saints are listed alphabetically by name, without the "St." in front (so "Augustine of Hippo," not "St. Augustine of Hippo"). "The Blessed Virgin Mary" keeps her title and is sorted under B.
-- **Questions:** every catechism question, normal and advanced, is always open with its answer. The normal questions come first, then the advanced questions under their own heading, with a count for each set.
+- **Questions:** every catechism question, normal and advanced, is always open with its answer. The normal questions come first, then the advanced questions under their own heading, with a count for each set. A "What is this?" question is listed under the object's name with a small photo, and opens to show all of that object's photos and its explanation.
 - **Moral Dilemmas:** the All Ages dilemmas are always open, with their full teaching and links, so parents can read what younger players will see. A dilemma for ages 13 and up shows once the player has answered it correctly in any game. **Every** dilemma for ages 13 and up opens after the player wins a perfect game with **advanced questions included** for the whole game; a single question drawn with "Normal questions only" rules that game out.
 - The game records, in the saved game, whether Easy prayers or "Normal questions only" were used at any point. A game saved before version 0.2.2 is taken to have used the options as they are when it is loaded.
 - Stored separately: "beaten" (won at least once), "complete" (won a perfect game), "all saints" and "older dilemmas". A Codex that a perfect game had fully opened before version 0.2.2 keeps every saint and every dilemma open.
@@ -443,13 +453,13 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.5") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.6") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
 - **Options**
 - **Codex**
-- **About:** a short description of the game, the line "The game collects no personal data." with a link to the privacy policy (https://johnamarante.github.io/the-way-of-life/privacy.html, which Google Play requires inside the app), and the portrait credits.
+- **About:** a short description of the game, the line "The game collects no personal data." with a link to the privacy policy (https://johnamarante.github.io/the-way-of-life/privacy.html, which Google Play requires inside the app), and the picture credits (saint portraits and object photos under Creative Commons licenses).
 - **Quit:** on Android, exits the app. In the browser version, a web page cannot close itself, so show a modal with this text, one line each:
 
   > Thanks for playing!

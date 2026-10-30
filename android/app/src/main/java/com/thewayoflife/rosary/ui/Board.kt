@@ -115,17 +115,18 @@ private fun DrawScope.drawGlow(spot: Spot, alpha: Float, isCurrent: Boolean, lef
 
 private val portraitCache = LruCache<String, ImageBitmap>(48)
 
-/** A saint portrait from assets/portraits, decoded off the main thread and cached. */
+/** A saint portrait from assets/portraits (or a picture from another assets [folder]), decoded off the main thread and cached. */
 @Composable
-fun rememberPortrait(fileName: String): ImageBitmap? {
+fun rememberPortrait(fileName: String, folder: String = "portraits"): ImageBitmap? {
     val context = LocalContext.current
-    val portrait by produceState(initialValue = portraitCache.get(fileName), fileName) {
+    val path = "$folder/$fileName"
+    val portrait by produceState(initialValue = portraitCache.get(path), path) {
         if (value == null) {
             value = withContext(Dispatchers.IO) {
                 runCatching {
-                    context.assets.open("portraits/$fileName").use(BitmapFactory::decodeStream)?.asImageBitmap()
+                    context.assets.open(path).use(BitmapFactory::decodeStream)?.asImageBitmap()
                 }.getOrNull()
-            }?.also { portraitCache.put(fileName, it) }
+            }?.also { portraitCache.put(path, it) }
         }
     }
     return portrait

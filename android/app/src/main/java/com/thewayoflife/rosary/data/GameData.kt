@@ -16,6 +16,8 @@ data class Question(
     val trueFalse: Boolean,
     /** From the Catechism of the Catholic Church; asked only with Advanced questions on (spec 11.2). */
     val advanced: Boolean,
+    /** "What is this?" questions (spec 4.5): photos of the object in assets/objects, one shown at random. */
+    val pictures: List<String> = emptyList(),
 )
 
 data class Saint(
@@ -51,7 +53,8 @@ data class Dilemma(
     val sources: String,
 )
 
-data class Credit(val saint: String, val image: String, val url: String, val license: String)
+/** [subject]: the saint or object the image shows. */
+data class Credit(val subject: String, val image: String, val url: String, val license: String)
 
 /** Everything the game reads, built from the CSVs by tools/build_game_data.py into game-data.json. */
 data class GameData(
@@ -87,6 +90,7 @@ data class GameData(
                         correct = it.getString("correct"),
                         trueFalse = it.getBoolean("trueFalse"),
                         advanced = it.getBoolean("advanced"),
+                        pictures = it.optJSONArray("pictures")?.strings() ?: emptyList(),
                     )
                 },
                 saints = root.getJSONArray("saints").objects().map {
@@ -121,7 +125,7 @@ data class GameData(
                 },
                 equivalents = root.getJSONArray("equivalents").let { a -> List(a.length()) { i -> a.getJSONArray(i).strings() } },
                 credits = root.getJSONArray("credits").objects().map {
-                    Credit(it.getString("saint"), it.getString("image"), it.getString("url"), it.getString("license"))
+                    Credit(it.getString("subject"), it.getString("image"), it.getString("url"), it.getString("license"))
                 },
             )
         }
