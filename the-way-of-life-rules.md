@@ -464,7 +464,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.11") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.12") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
@@ -515,7 +515,7 @@ Five short sounds, kept in the `sounds/` folder; each file's name says when it p
 
 | File | Plays when |
 |---|---|
-| `question_answered_correctly.mp3` | a catechism question is answered correctly |
+| `question_answered_correctly.mp3` | a catechism question is answered correctly, or Continue is tapped after using a saint card on one |
 | `question_wrong.mp3` | a catechism question is answered wrongly, or the wrong choice is made on the Moral Dilemma |
 | `passed_challenge.mp3` | a Prayer Challenge is completed or a Saint Challenge is won |
 | `pennance_complete.mp3` | the penance prayer is submitted correctly |

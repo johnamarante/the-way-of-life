@@ -476,6 +476,7 @@
         el("div", { class: "answer-note" }, el("strong", {}, q.correct), el("br"), q.answer),
         button("Continue", () => {
           closeModal();
+          playSound("question_answered_correctly"); // the bead lights up with the same sound as a right answer
           const result = R.useCard(state, name);
           afterMove(result ? result.restored : [], nextChallenge);
         }, "primary"));

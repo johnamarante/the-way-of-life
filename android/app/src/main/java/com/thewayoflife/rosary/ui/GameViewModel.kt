@@ -210,6 +210,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         addQuestionToCodex(questionId)
         val move = Rules.useCard(g, name) ?: return
         invokedCard = null
+        sounds.play(Sound.QUESTION_RIGHT) // the bead lights up with the same sound as a right answer
         afterMove(move) { nextChallenge() }
     }
 
