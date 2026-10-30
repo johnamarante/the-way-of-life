@@ -116,7 +116,7 @@ def object_pictures(name):
     "St. Peter" -> st_peter-statue-1.jpg, st_peter-image-2.jpg..."""
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
     files = sorted(p.name for p in OBJECTS.glob(f"{slug}-*.jpg"))
-    assert 2 <= len(files) <= 5, f"{name}: needs 2 to 5 pictures named objects/{slug}-<n>.jpg, found {len(files)}"
+    assert 1 <= len(files) <= 5, f"{name}: needs 1 to 5 pictures named objects/{slug}-<n>.jpg, found {len(files)}"
     return files
 
 
@@ -231,6 +231,11 @@ def main():
         shutil.copyfile(ROOT / "portraits" / saint["portrait"], portraits / saint["portrait"])
     pictures = ANDROID_ASSETS / "objects"
     pictures.mkdir(exist_ok=True)
+    # Remove copies of pictures that were deleted from objects/, so they do not ship in the APK.
+    used = {p for q in data["questions"] for p in q["pictures"]}
+    for stale in pictures.glob("*.jpg"):
+        if stale.name not in used:
+            stale.unlink()
     for q in data["questions"]:
         for picture in q["pictures"]:
             shutil.copyfile(OBJECTS / picture, pictures / picture)
