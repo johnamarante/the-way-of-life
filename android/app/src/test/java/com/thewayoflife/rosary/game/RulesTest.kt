@@ -187,7 +187,7 @@ class RulesTest {
             s.pPos -= 1 // put that prayer back so the next pass lines up
         }
         val easy = data.prayers.indices.filter { data.prayers[it].easy }
-        assertEquals(6, easy.size)
+        assertEquals(7, easy.size)
         val t = Rules.newGame(data, random)
         repeat(5) {
             val drawn = easy.map { Rules.drawPrayer(t, data, easyOnly = true, random = random) }

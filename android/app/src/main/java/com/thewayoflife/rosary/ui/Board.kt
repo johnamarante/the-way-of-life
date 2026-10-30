@@ -3,14 +3,17 @@ package com.thewayoflife.rosary.ui
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
@@ -31,7 +34,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.random.Random
 
 private const val ZOOM = 1.8f
 private val MOVE = tween<Float>(700)
@@ -54,6 +61,24 @@ fun RosaryBoard(beads: List<Spot>, cross: Spot, litUpTo: Int, current: Int, zoom
         coroutineScope {
             glow.forEachIndexed { index, level ->
                 launch { level.animateTo(if (index <= litUpTo) 1f else 0f, tween(200)) }
+            }
+        }
+    }
+    // Bursts on beads that just lit up: each one on a short step (a Latin skip lights six at once), only the
+    // new bead on a long jump (restored after penance), none on the first composition or when beads go out.
+    val bursts = remember { mutableStateListOf<Burst>() }
+    val shownLit = remember { intArrayOf(litUpTo) }
+    val burstScope = rememberCoroutineScope()
+    LaunchedEffect(litUpTo) {
+        val from = shownLit[0]
+        shownLit[0] = litUpTo
+        if (litUpTo <= from) return@LaunchedEffect
+        for (index in (if (litUpTo - from <= 6) from + 1 else litUpTo)..minOf(litUpTo, Rules.CROSS)) {
+            val burst = Burst(index)
+            bursts.add(burst)
+            burstScope.launch {
+                burst.progress.animateTo(1f, tween(BURST_MS, easing = LinearEasing))
+                bursts.remove(burst)
             }
         }
     }
@@ -90,6 +115,60 @@ fun RosaryBoard(beads: List<Spot>, cross: Spot, litUpTo: Int, current: Int, zoom
                 drawGlow(spot, alpha, isCurrent, left, top, drawnWidth, drawnHeight)
             }
         }
+        bursts.forEach { drawBurst(it, spots[it.index], left, top, drawnWidth, drawnHeight) }
+    }
+}
+
+private const val BURST_MS = 1300
+private const val SPARKS = 22
+
+/** One spark of a [Burst]: its direction, how far it flies and its size (in bead radii), and its share of the burst's time. */
+private class Spark(val angle: Float, val distance: Float, val size: Float, val life: Float)
+
+/** A white sunburst from a bead that has just lit up: a flash and sparks flying outward, fading to the lit bead. */
+private class Burst(val index: Int) {
+    val progress = Animatable(0f)
+    val sparks = List(SPARKS) { i ->
+        Spark(
+            angle = ((i + Random.nextFloat() * 0.6f) / SPARKS * 2 * PI).toFloat(),
+            distance = 5f + Random.nextFloat() * 3f,
+            size = 0.2f + Random.nextFloat() * 0.15f,
+            life = 0.75f + Random.nextFloat() * 0.25f,
+        )
+    }
+}
+
+private fun DrawScope.drawBurst(burst: Burst, spot: Spot, left: Float, top: Float, width: Float, height: Float) {
+    val center = Offset(left + spot.x * width, top + spot.y * height)
+    val r = spot.r * width
+    val p = burst.progress.value
+    // The flash: a white glow that grows from the bead and fades in the first half of the burst.
+    val flash = (p / 0.5f).coerceAtMost(1f)
+    if (flash < 1f) {
+        val radius = r * 4.5f * (0.2f + 0.8f * (1f - (1f - flash) * (1f - flash)))
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color.White.copy(alpha = 1f - flash), Color.White.copy(alpha = 0.55f * (1f - flash)), Color.Transparent),
+                center = center,
+                radius = radius,
+            ),
+            radius = radius,
+            center = center,
+        )
+    }
+    // The sparks fly out fast, slow down, drift down a little and fade.
+    burst.sparks.forEach { spark ->
+        val t = (p / spark.life).coerceAtMost(1f)
+        if (t >= 1f) return@forEach
+        val travel = 1f - (1f - t) * (1f - t) * (1f - t)
+        val sparkCenter = Offset(
+            center.x + cos(spark.angle) * spark.distance * r * travel,
+            center.y + sin(spark.angle) * spark.distance * r * travel + r * 1.5f * t * t,
+        )
+        val alpha = if (t < 0.55f) 1f else 1f - (t - 0.55f) / 0.45f
+        val size = maxOf(1.5f, spark.size * r * (1f - 0.6f * t))
+        drawCircle(Color.White.copy(alpha = alpha * 0.35f), radius = size * 2.2f, center = sparkCenter)
+        drawCircle(Color.White.copy(alpha = alpha), radius = size, center = sparkCenter)
     }
 }
 

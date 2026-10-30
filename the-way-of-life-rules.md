@@ -15,7 +15,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 | `St_Joseph_First_Communion_Catechism_Quiz.csv` | 113 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer`, `Picture` |
 | `Catechism_Advanced_Questions.csv` | 311 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
 | `Catholic_Saints_Trivia.csv` | 209 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
-| `Catholic_Prayers_Segments.csv` | 30 (15 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
+| `Catholic_Prayers_Segments.csv` | 32 (16 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
 | `Catholic_Moral_Dilemmas.csv` | 34 | `Number`, `Title`, `Age Level`, `Dilemma`, `Question`, `Right Choice`, `Wrong Choice`, `Catholic Answer`, `Key Principle`, `CCC References`, `Sources` |
 
 Notes on the data:
@@ -110,6 +110,8 @@ The Cross is not a bead, so it is not in the `"beads"` list. The game needs a sp
 | Center of the Cross (where the crossbar meets the upright) | 0.7157 | 0.0326 | 0.065 |
 
 This is stored in `rosary_beads.json` (and its copy in the Android assets) as a separate top-level `"cross"` object with `index` 58, outside `"beads"`, so the bead count stays 58. The current Android and browser loaders read only the keys they need, so they ignore it until the game code uses it. When the player reaches the Cross, light it with the same glow as a bead, scaled to `r`. If the board art changes, re-measure this point along with the beads.
+
+**Lighting up.** When a bead or the Cross lights up, a white sunburst plays over it for about a second: a flash grows from it and fades while small white sparks fly outward in a ring, slow down, drift down a little and fade, leaving the lit bead. Glory beads and the Cross get the same burst. When several beads light at once (a Latin prayer skips five), each one bursts; on a longer jump (restored to Decade 5 after penance) only the new bead does. There is no burst when the board first shows or when beads go out.
 
 ### 2.3 Decades for saint card purposes
 
@@ -353,7 +355,7 @@ When the player taps an eligible card:
 2. Load the segments for the chosen language.
 3. Present the segments in a random order (never already in the correct order).
 
-**Prayer deck.** At the start of each game the 15 prayers are shuffled into a deck, kept in the saved game. Every Prayer Challenge and penance prayer takes the next prayer from the deck, whether the player passes it, runs out of time or gives up; English and Latin are the same prayer, so the language does not matter. Only when the whole deck has been used is it reshuffled, and the new order never starts with the prayer drawn last. With **Easy prayers** on (Section 11.2), prayers not marked easy are skipped as the deck is drawn, so only the six easy prayers appear, each once per pass. A game saved by an older version gets a new deck the first time it draws a prayer.
+**Prayer deck.** At the start of each game the 16 prayers are shuffled into a deck, kept in the saved game. Every Prayer Challenge and penance prayer takes the next prayer from the deck, whether the player passes it, runs out of time or gives up; English and Latin are the same prayer, so the language does not matter. Only when the whole deck has been used is it reshuffled, and the new order never starts with the prayer drawn last. With **Easy prayers** on (Section 11.2), prayers not marked easy are skipped as the deck is drawn, so only the seven easy prayers appear, each once per pass. A game saved by an older version gets a new deck the first time it draws a prayer.
 
 ### 8.2 Arranging the segments
 
@@ -381,6 +383,7 @@ The time limit scales with the number of segments in the chosen language, from 2
 | Eternal Rest / Requiem Aeternam | 4 | 25 s |
 | The Fatima Prayer / Oratio Fatimae | 6 | 40 s |
 | Grace Before Meals / Benedictio Mensae | 6 | 40 s |
+| Grace After Meals / Gratiarum Actio post Mensam | 6 | 40 s |
 | The Guardian Angel Prayer / Angele Dei | 7 | 45 s |
 | The Glory Be / Gloria Patri | 8 | 50 s |
 | The Hail Mary / Ave Maria | 10 | 65 s |
@@ -461,7 +464,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.9") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.10") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
@@ -482,7 +485,7 @@ The menu shows the game's title over the zoomed board, the buttons below, and th
 - **Phones (browser):** on screens up to 520 pixels wide or 700 tall, challenge windows use smaller text, tighter spacing and a smaller saint portrait, so questions and results fit without scrolling. A heading only leaves room for a timer when the challenge has one. Any button that appears at the end of a challenge (Next, Continue) is scrolled into view.
 - **Challenge window size:** Compact, Standard or Large. Compact is at most 480 wide and half the screen tall; Standard 580 wide and 70% tall; Large 680 wide and as tall as the screen allows. The content scrolls inside when it does not fit. It does not apply while a prayer is being arranged, which always takes the whole screen (Section 8.2). Default: Compact.
 - **Catechism questions:** "Normal questions only" or "Include advanced questions from the Catechism of the Catholic Church" (Section 4.1). It is separate from Easy prayers and from the dilemma age level, and can be changed at any time; it takes effect from the next question drawn. Default: Normal questions only.
-- **Prayers:** "All prayers" or "Easy prayers only." With easy prayers, only the prayers marked `EasyPrayer` = `TRUE` in the data appear in Prayer Challenges and penance: The Our Father, The Hail Mary, The Glory Be, The Sign of the Cross, Grace Before Meals and The Guardian Angel Prayer. The player still chooses English or Latin, and Latin still skips five beads. It can be changed at any time, including during a game (from the in-game menu button, then Options); it takes effect from the next prayer drawn. Default: All prayers.
+- **Prayers:** "All prayers" or "Easy prayers only." With easy prayers, only the prayers marked `EasyPrayer` = `TRUE` in the data appear in Prayer Challenges and penance: The Our Father, The Hail Mary, The Glory Be, The Sign of the Cross, Grace Before Meals, The Guardian Angel Prayer and The Fatima Prayer. Grace After Meals is not easy, because it is less commonly known. The player still chooses English or Latin, and Latin still skips five beads. It can be changed at any time, including during a game (from the in-game menu button, then Options); it takes effect from the next prayer drawn. Default: All prayers.
 - **Saints:** "Well-known saints only" or "Include lesser-known saints" (the `Lesser Known` column, Section 1.1). It takes effect from the next Saint Challenge. Default: Well-known saints only. Lesser-known saints are still listed in the Codex either way.
 - **Moral dilemma age level:** "All Ages only" or "Include Ages 13 and up." Default: All Ages only.
 

@@ -172,8 +172,50 @@
     requestAnimationFrame(() => node.scrollIntoView({ block: "nearest", behavior: "smooth" }));
   }
 
+  // A white sunburst from a bead that has just lit up: a flash and sparks flying outward, fading to the lit bead.
+  function burst(spot) {
+    const r = spot.r * board.offsetWidth;
+    const b = el("div", { class: "burst" });
+    b.style.left = spot.x * 100 + "%";
+    b.style.top = spot.y * 100 + "%";
+    const flash = el("div", { class: "burst-flash" });
+    flash.style.width = flash.style.height = r * 9 + "px";
+    b.append(flash);
+    flash.animate([
+      { transform: "translate(-50%, -50%) scale(0.2)", opacity: 1 },
+      { transform: "translate(-50%, -50%) scale(1)", opacity: 0 },
+    ], { duration: 650, easing: "ease-out" });
+    const SPARKS = 22;
+    for (let i = 0; i < SPARKS; i++) {
+      const spark = el("div", { class: "burst-spark" });
+      const angle = (i + Math.random() * 0.6) / SPARKS * 2 * Math.PI;
+      const distance = r * (5 + Math.random() * 3);
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      spark.style.width = spark.style.height = Math.max(3, r * (0.4 + Math.random() * 0.3)) + "px";
+      b.append(spark);
+      spark.animate([
+        { transform: "translate(-50%, -50%)", opacity: 1 },
+        { transform: `translate(calc(-50% + ${dx * 0.85}px), calc(-50% + ${dy * 0.85}px))`, opacity: 1, offset: 0.55 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + r * 1.5}px)) scale(0.4)`, opacity: 0 },
+      ], { duration: 1000 + Math.random() * 300, easing: "cubic-bezier(0.2, 0.7, 0.3, 1)" });
+    }
+    board.append(b);
+    setTimeout(() => b.remove(), 1400);
+  }
+  // Bursts on beads that just lit up: each one on a short step (a Latin skip lights six at once), only the
+  // new bead on a long jump (restored after penance), none on the first render or when beads go out.
+  let shownLit = null;
+  function burstNewlyLit(litUpTo) {
+    const from = shownLit;
+    shownLit = litUpTo;
+    if (from === null || litUpTo <= from) return;
+    for (let i = litUpTo - from <= 6 ? from + 1 : litUpTo; i <= Math.min(litUpTo, R.CROSS); i++) burst(spotOf(i));
+  }
+
   // Lights beads 0..litUpTo; the bead at `current` (or the Cross) gets the stronger glow and the view follows it.
   function renderBoard(litUpTo, current) {
+    burstNewlyLit(litUpTo);
     glows.forEach((g, i) => {
       const isCurrent = i === current;
       g.style.width = BEADS[i].r * 2 * (isCurrent ? 2.25 : 1.8) * 100 + "%";

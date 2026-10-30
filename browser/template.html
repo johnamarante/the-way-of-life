@@ -78,6 +78,14 @@
       rgba(255, 246, 216, 0.68) 0%, rgba(255, 233, 166, 0.26) 50%, rgba(255, 233, 166, 0) 100%);
   }
   .glow.lit { opacity: 1; }
+  /* The sunburst when a bead lights up (game.js burst()); both parts rest invisible and are animated in. */
+  .burst { position: absolute; width: 0; height: 0; pointer-events: none; }
+  .burst-flash, .burst-spark { position: absolute; left: 0; top: 0; border-radius: 50%; opacity: 0; }
+  .burst-flash {
+    background: radial-gradient(circle closest-side,
+      rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.55) 35%, rgba(255, 255, 255, 0) 100%);
+  }
+  .burst-spark { background: #fff; box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.9); }
   .glow.current {
     background: radial-gradient(circle closest-side,
       rgba(255, 246, 216, 0.88) 0%, rgba(255, 233, 166, 0.33) 50%, rgba(255, 233, 166, 0) 100%);

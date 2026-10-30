@@ -167,7 +167,7 @@ test("prayer deck: every prayer once per pass, no repeat across a reshuffle, eas
     s.pPos -= 1; // put that prayer back so the next pass lines up
   }
   const easy = data.prayers.map((p, i) => p.easy ? i : -1).filter(i => i >= 0);
-  assert.strictEqual(easy.length, 6);
+  assert.strictEqual(easy.length, 7);
   const t = R.newGame(data, rng);
   for (let round = 0; round < 5; round++) {
     const drawn = easy.map(() => R.drawPrayer(t, data, true, rng));
