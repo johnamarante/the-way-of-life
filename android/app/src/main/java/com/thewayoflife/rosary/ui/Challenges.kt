@@ -375,7 +375,10 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
     val q = vm.data.questions[qIndex]
     val choices = remember { if (q.trueFalse) q.options else q.options.shuffled() }
     // "What is this?" questions show one of several photos of the object (spec 4.5).
-    val picture = remember { q.pictures.randomOrNull() }
+    // "Who is this?" pictures of people are worded by picture: a statue or an image (spec 4.6).
+    val pictureIndex = remember { if (q.pictures.isEmpty()) -1 else q.pictures.indices.random() }
+    val picture = q.pictures.getOrNull(pictureIndex)
+    val questionText = q.pictureQuestions.getOrNull(pictureIndex) ?: q.question
     var picked by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { vm.cardsUsable = true }
     val invoked = vm.invokedCard
@@ -387,7 +390,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
             Kicker(Rules.beadLabel(position))
             Portrait(saint.portrait, saint.name)
             Text(saint.invocation, fontSize = 22.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            Text(q.question)
+            Text(questionText)
             if (picture != null) Portrait(picture, "Picture for the question", folder = "objects")
             AnswerNote {
                 Text(q.correct, fontWeight = FontWeight.Bold)
@@ -408,7 +411,7 @@ private fun QuestionContent(vm: GameViewModel, qIndex: Int) {
     }
     ModalBody {
         Kicker(Rules.beadLabel(position))
-        Heading(q.question)
+        Heading(questionText)
         if (picture != null) Portrait(picture, "Picture for the question", folder = "objects")
         choices.forEach { text ->
             val style = when {

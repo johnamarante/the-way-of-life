@@ -18,6 +18,8 @@ data class Question(
     val advanced: Boolean,
     /** "What is this?" questions (spec 4.5): photos of the object in assets/objects, one shown at random. */
     val pictures: List<String> = emptyList(),
+    /** The question for each of [pictures]; pictures of people say "a statue" or "an image" (spec 4.6). */
+    val pictureQuestions: List<String> = emptyList(),
 )
 
 data class Saint(
@@ -91,6 +93,7 @@ data class GameData(
                         trueFalse = it.getBoolean("trueFalse"),
                         advanced = it.getBoolean("advanced"),
                         pictures = it.optJSONArray("pictures")?.strings() ?: emptyList(),
+                        pictureQuestions = it.optJSONArray("pictureQuestions")?.strings() ?: emptyList(),
                     )
                 },
                 saints = root.getJSONArray("saints").objects().map {

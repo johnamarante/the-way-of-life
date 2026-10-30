@@ -59,11 +59,14 @@ def display_name(name):
 def build_questions():
     """Normal questions (St. Joseph catechism) first, then the advanced set from the Catechism of the
     Catholic Church (spec 4.1, 11.2), then the "What is this?" picture questions from both files (spec 4.5),
-    so adding pictures never shifts the place of an older question in a saved game. Normal question numbers
-    stay below 1000, advanced ones start at 1001, so ids never collide."""
+    then the "Who is this?" statue and image questions (spec 4.6), so adding pictures never shifts the place
+    of an older question in a saved game. Normal question numbers stay below 1000, advanced ones start at
+    1001, so ids never collide."""
     questions = read_questions("St_Joseph_First_Communion_Catechism_Quiz.csv", advanced=False)
     questions += read_questions("Catechism_Advanced_Questions.csv", advanced=True)
-    questions = [q for q in questions if not q["pictures"]] + [q for q in questions if q["pictures"]]
+    people = [q for q in questions if any(t != q["question"] for t in q["pictureQuestions"])]
+    objects = [q for q in questions if q["pictures"] and q not in people]
+    questions = [q for q in questions if not q["pictures"]] + objects + people
     ids = [q["id"] for q in questions]
     assert len(ids) == len(set(ids)), "question numbers must be unique"
     assert all((q["id"] > 1000) == q["advanced"] for q in questions), "advanced questions are numbered from 1001"
@@ -90,14 +93,27 @@ def read_questions(name, advanced):
             "correct": correct,
             "trueFalse": true_false,
             "advanced": advanced,
-            # Spec 4.5: one of these photos of the object is shown, picked at random each time.
-            "pictures": object_pictures(picture) if picture else [],
         })
+        # Spec 4.5, 4.6: one of these pictures is shown, picked at random each time, with its own wording.
+        pictures = object_pictures(picture) if picture else []
+        questions[-1]["pictures"] = pictures
+        questions[-1]["pictureQuestions"] = [picture_question(p, row["Question"].strip()) for p in pictures]
     return questions
 
 
+def picture_question(file, question):
+    """Spec 4.6: a picture of a person is named <slug>-statue-<n>.jpg or <slug>-image-<n>.jpg, which picks the
+    wording of its question; any other picture keeps the question from the CSV."""
+    if "-statue-" in file:
+        return "Who is this a statue of?"
+    if "-image-" in file:
+        return "Who is this an image of?"
+    return question
+
+
 def object_pictures(name):
-    """Photos of an object in objects/, named after it: "Brown Scapular" -> brown_scapular-1.jpg, -2.jpg..."""
+    """Pictures in objects/, named after what they show: "Brown Scapular" -> brown_scapular-1.jpg, -2.jpg...,
+    "St. Peter" -> st_peter-statue-1.jpg, st_peter-image-2.jpg..."""
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
     files = sorted(p.name for p in OBJECTS.glob(f"{slug}-*.jpg"))
     assert 2 <= len(files) <= 5, f"{name}: needs 2 to 5 pictures named objects/{slug}-<n>.jpg, found {len(files)}"
@@ -225,7 +241,7 @@ def main():
         shutil.copyfile(sound, sounds / sound.name)
     print(f"Wrote game-data.json: {len(data['questions'])} questions, {len(data['saints'])} saints, "
           f"{len(data['prayers'])} prayers, {len(data['dilemmas'])} dilemmas, {len(data['credits'])} credits; "
-          f"copied {len(data['saints'])} portraits and {sum(len(q['pictures']) for q in data['questions'])} object pictures.")
+          f"copied {len(data['saints'])} portraits and {sum(len(q['pictures']) for q in data['questions'])} question pictures.")
 
 
 if __name__ == "__main__":

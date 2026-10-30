@@ -366,7 +366,10 @@
     const q = DATA.questions[qIndex];
     const choices = q.trueFalse ? q.options.slice() : R.shuffle(q.options, rng);
     // "What is this?" questions show one of several photos of the object (spec 4.5).
-    const picture = q.pictures.length ? q.pictures[Math.floor(rng() * q.pictures.length)] : null;
+    // "Who is this?" pictures of people are worded by picture: a statue or an image (spec 4.6).
+    const pictureIndex = q.pictures.length ? Math.floor(rng() * q.pictures.length) : -1;
+    const picture = pictureIndex >= 0 ? q.pictures[pictureIndex] : null;
+    const questionText = picture ? q.pictureQuestions[pictureIndex] : q.question;
     const pictureImg = () => picture ? el("img", { class: "portrait", src: OBJECT_PICTURES[picture], alt: "Picture for the question" }) : null;
     const feedback = el("p", { class: "feedback" });
     const buttons = choices.map(text => button(text, () => choose(text)));
@@ -424,7 +427,7 @@
         el("p", { class: "kicker" }, beadLabel(state.position)),
         el("img", { class: "portrait", src: PORTRAITS[saint.portrait], alt: name }),
         el("p", { class: "invocation" }, saint.invocation),
-        el("p", {}, q.question),
+        el("p", {}, questionText),
         pictureImg(),
         el("div", { class: "answer-note" }, el("strong", {}, q.correct), el("br"), q.answer),
         button("Continue", () => {
@@ -436,7 +439,7 @@
     renderHud();
     openModal(
       el("p", { class: "kicker" }, beadLabel(state.position)),
-      el("h2", {}, q.question),
+      el("h2", {}, questionText),
       pictureImg(),
       el("div", { class: "stack" }, buttons),
       feedback,
