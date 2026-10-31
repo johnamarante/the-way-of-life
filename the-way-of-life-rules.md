@@ -12,7 +12,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 
 | File | Rows | Columns used |
 |---|---|---|
-| `St_Joseph_First_Communion_Catechism_Quiz.csv` | 113 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer`, `Picture` |
+| `St_Joseph_First_Communion_Catechism_Quiz.csv` | 96 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer`, `Picture` |
 | `Catechism_Advanced_Questions.csv` | 311 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
 | `Catholic_Saints_Trivia.csv` | 209 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
 | `Catholic_Prayers_Segments.csv` | 32 (16 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
@@ -21,7 +21,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 Notes on the data:
 
 - Catechism questions are either 4-option multiple choice or True/False. A question is True/False when `Answer C` and `Answer D` are empty; `Answer A` is `TRUE` and `Answer B` is `FALSE`. Display these as "True" and "False".
-- `Picture` is empty except on "What is this?" and "Who is this?" questions (Sections 4.5 and 4.6), where it names the object or person shown. Its photos are in `objects/`, named after the object in lowercase with underscores and numbered: `Brown Scapular` uses `objects/brown_scapular-1.jpg`, `brown_scapular-2.jpg` and so on, 1 to 5 per object or person, each 256 x 256. Where each photo came from, and its license, is in `object_picture_sources.md`.
+- `Picture` is empty except on "What is this?" questions (Section 4.5), where it names the object shown. Its photos are in `objects/`, named after the object in lowercase with underscores and numbered: `Brown Scapular` uses `objects/brown_scapular-1.jpg`, `brown_scapular-2.jpg` and so on, 1 to 5 per object, each 256 x 256. Where each photo came from, and its license, is in `object_picture_sources.md`.
 - `Correct Answer` is a letter referring to the original column. Because options are shuffled (Section 4), track the correct option by its content, not its letter.
 - `Year Born` is a display string (for example `c. 50 BC`, `early 1st c.`, `1225`). Show it as-is; do not parse it. It is empty for the three archangels (Michael, Gabriel, Raphael), who were never born; when it is empty, show no birth year at all (no label, no placeholder).
 - English and Latin rows of the same prayer are adjacent in the file. Pair them by row order (row 2n is English, row 2n+1 is its Latin counterpart). Segment counts can differ between the two languages (the Act of Contrition has 11 in English and 12 in Latin).
@@ -151,7 +151,7 @@ The in-game bar shows the player's score for this game under the saint cards:
 ### 4.1 Selection
 
 - There are two sets of questions:
-  - **Normal questions:** the 113 in `St_Joseph_First_Communion_Catechism_Quiz.csv`. These are the 83 from the St. Joseph First Communion Catechism (revised in version 0.1.0 after a doctrinal review), plus 10 on the Mass and the Eucharist, plus 3 "What is this?" picture questions (Section 4.5) and 17 "Who is this?" statue and image questions (Section 4.6).
+  - **Normal questions:** the 96 in `St_Joseph_First_Communion_Catechism_Quiz.csv`. These are the 83 from the St. Joseph First Communion Catechism (revised in version 0.1.0 after a doctrinal review), plus 10 on the Mass and the Eucharist, plus 3 "What is this?" picture questions (Section 4.5).
   - **Advanced questions:** the 311 in `Catechism_Advanced_Questions.csv`: 289 written from the Catechism of the Catholic Church, where every answer cites its CCC paragraph, plus 22 "What is this?" picture questions.
 - By default only normal questions are asked. With **Advanced questions** on (Section 11.2), both sets are mixed together at random.
 - The game keeps one shuffled deck of every question and draws from it without repeats, skipping advanced questions unless they are on. When the deck runs out, it is reshuffled and play continues. A deck saved before the question bank changed size is replaced with a new one.
@@ -186,13 +186,9 @@ The in-game bar shows the player's score for this game under the saint cards:
 - If a saint card is used instead (Section 7.2), the photo stays on screen with the right name and its explanation.
 - In the bank of questions, the picture questions come after all the others, so adding them did not change which question a saved game is on.
 
-### 4.6 "Who is this?" statue and image questions
+### 4.6 "Who is this?" questions (removed)
 
-- Like Section 4.5, but the picture shows a person: a statue, or an image such as a painting, an icon or a photograph. All of them are normal questions, in `St_Joseph_First_Communion_Catechism_Quiz.csv`.
-- The people: Jesus; the Blessed Virgin Mary, and Mary as Our Lady of Guadalupe, Our Lady of Lourdes and Our Lady of Fatima; Mary and the child Jesus (the icon of Our Lady of Perpetual Help); St. Joseph; the Holy Family; Sts. Peter, Paul, Michael the Archangel (defeating the devil), George (slaying the dragon with his lance), Patrick, John the Baptist, Thomas More, Junipero Serra and Bernadette. Sts. John the Apostle and Jude Thaddeus were left out in version 1.0.8 because their pictures are easily mistaken for Jesus, and St. Mary Magdalene because hers are easily mistaken for the Blessed Virgin Mary.
-- The wording follows the picture shown: "Who is this a statue of?" or "Who is this an image of?". Each picture's file name says which: `st_peter-statue-1.jpg` or `st_peter-image-2.jpg`. The CSV's own question, "Who is this?", is used only where a picture's name says neither.
-- Each person has 1 to 5 pictures, chosen so that who is shown is not in doubt; fewer, better pictures are preferred to many. The wrong answers are other saints, or, for a mother and child, pairs that are plainly wrong ("Judith and the child Gideon").
-- In the bank of questions, these come after the "What is this?" questions.
+Versions 1.0.7 to 1.0.12 also asked "Who is this a statue of?" and "Who is this an image of?" about pictures of Jesus, Mary and the saints. They were removed in version 1.12.1 because children found them too hard, especially pictures with more than one person. The "What is this?" questions on objects (Section 4.5) stay.
 
 ---
 
@@ -464,7 +460,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.0.12") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.12.1") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read. From version 1.12.1 on, the three numbers are the major version, the minor version and the bug fix.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.

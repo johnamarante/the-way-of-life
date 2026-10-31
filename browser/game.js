@@ -364,7 +364,14 @@
     state = savedGame();
     if (!state) return showMenu();
     enterGame();
-    if (state.challenge) openChallenge(); else nextChallenge();
+    if (state.challenge && isValid(state.challenge)) openChallenge(); else nextChallenge();
+  }
+  // A saved challenge whose question, saint, prayer or dilemma is no longer in the data (removed in an update)
+  // is replaced by a new one for the same bead.
+  function isValid(c) {
+    const list = { question: DATA.questions, saint: DATA.saints, prayer: DATA.prayers, dilemma: DATA.dilemmas }[c.kind];
+    const index = { question: c.q, saint: c.saint, prayer: c.prayer, dilemma: c.d }[c.kind];
+    return !list || (Number.isInteger(index) && index >= 0 && index < list.length);
   }
   function enterGame() {
     hidePanel();

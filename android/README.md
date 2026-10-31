@@ -33,7 +33,7 @@ From this `android` directory on Windows:
 .\gradlew.bat testDebugUnitTest assembleDebug
 ```
 
-The APK is copied to `dist/the-way-of-life-v-<version>.apk` (for example `dist/the-way-of-life-v-1-0-12.apk`). The version comes from the `VERSION` file in the repo root, shared with the browser build. When you change it, also raise `versionCode` in `app/build.gradle.kts` so phones accept the new APK over the old one.
+The APK is copied to `dist/the-way-of-life-v-<version>.apk` (for example `dist/the-way-of-life-v-1-12-1.apk`). The version comes from the `VERSION` file in the repo root, shared with the browser build. When you change it, also raise `versionCode` in `app/build.gradle.kts` so phones accept the new APK over the old one.
 
 ## App icon
 
@@ -48,5 +48,5 @@ python tools/make_app_icon.py
 Enable USB debugging on the phone, connect it, and run:
 
 ```powershell
-adb install -r dist/the-way-of-life-v-1-0-12.apk
+adb install -r dist/the-way-of-life-v-1-12-1.apk
 ```

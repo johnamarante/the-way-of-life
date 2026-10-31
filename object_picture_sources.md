@@ -1,6 +1,6 @@
 # Picture Sources
 
-Pictures for the "What is this?" questions (rules section 4.5) and the "Who is this?" statue and image questions (section 4.6), from Wikimedia Commons, where every file has a free license. Each object or person has 1 to 5 pictures; with more than one, the game shows a different one each time.
+Pictures for the "What is this?" questions (rules section 4.5), from Wikimedia Commons, where every file has a free license. Each object has 1 to 5 pictures; with more than one, the game shows a different one each time.
 
 **How to use:** the files are downloaded and letterboxed to 256 x 256 by `tools/PortraitFetcher`:
 
@@ -8,11 +8,11 @@ Pictures for the "What is this?" questions (rules section 4.5) and the "Who is t
 dotnet run --project tools/PortraitFetcher -- --sources object_picture_sources.md --out objects
 ```
 
-The "Save as" name must stay `<name>-<n>.jpg`, with the name from the `Picture` column in lowercase and spaces or symbols as underscores (`Brown Scapular` is `brown_scapular-1.jpg`). That is how the build finds the pictures. A picture of a person also says whether it is a statue or an image, which sets the wording of its question: `st_peter-statue-1.jpg`, `st_peter-image-2.jpg`.
+The "Save as" name must stay `<name>-<n>.jpg`, with the name from the `Picture` column in lowercase and spaces or symbols as underscores (`Brown Scapular` is `brown_scapular-1.jpg`). That is how the build finds the pictures.
 
 **Credit needed:** public domain and CC0 images need nothing. Images marked **Yes** are under CC BY or CC BY-SA and are credited on the About screen; CC BY-SA also means the 256 x 256 copy is shared under the same license.
 
-Licenses were read from Commons on 2026-10-30. Two pictures (marked "Supplied by you") were added by hand and are not from Commons; their source and license are not recorded. Every picture was checked by eye to show the object or person clearly, with nothing that could also fit one of the wrong answers.
+Licenses were read from Commons on 2026-10-30. Every picture was checked by eye to show the object clearly, with nothing that could also fit one of the wrong answers.
 
 | # | Object | Save as | Image | Size (px) | License | Credit needed | Notes |
 |---|---|---|---|---|---|---|---|
@@ -94,33 +94,3 @@ Licenses were read from Commons on 2026-10-30. Two pictures (marked "Supplied by
 | 76 | Communion rail | `communion_rail-1.jpg` | [Kirche Unterdürnbach Kommunionbank](https://commons.wikimedia.org/wiki/File:Kirche_Unterd%C3%BCrnbach_Kommunionbank.jpg) | 3008 x 2000 | CC BY-SA 3.0 at | Yes | |
 | 77 | Communion rail | `communion_rail-2.jpg` | [KortenbosBasiliek, interieur02](https://commons.wikimedia.org/wiki/File:KortenbosBasiliek,_interieur02.jpg) | 2294 x 1249 | CC BY-SA 3.0 | Yes | |
 | 78 | Communion rail | `communion_rail-3.jpg` | [4897Religious of the Virgin Mary 04](https://commons.wikimedia.org/wiki/File:4897Religious_of_the_Virgin_Mary_04.jpg) | 4608 x 3456 | CC0 | No | |
-
-## People
-
-| # | Person | Save as | Image | Size (px) | License | Credit needed | Notes |
-|---|---|---|---|---|---|---|---|
-| 79 | Jesus | `jesus-image-2.jpg` | [SacredHeartBatoni](https://commons.wikimedia.org/wiki/File:SacredHeartBatoni.jpg) | 1034 x 1441 | CC0 | No | |
-| 80 | Jesus | `jesus-statue-1.jpg` | Supplied by you (local file, not from Commons) | 256 x 256 | Unknown | Check | Statue of Christ with the cross on St. Peter's Basilica |
-| 81 | The Blessed Virgin Mary | `the_blessed_virgin_mary-statue-1.jpg` | [Statue Virgin Mary Monastery San Hieronimo, Granada, Anda...](https://commons.wikimedia.org/wiki/File:Statue_Virgin_Mary_Monastery_San_Hieronimo,_Granada,_Andalusia,_Spain.jpg) | 2675 x 4423 | CC0 | No | |
-| 82 | The Blessed Virgin Mary | `the_blessed_virgin_mary-statue-2.jpg` | [Statue of the Blessed Virgin Mary at Saint Anthony Cathol...](https://commons.wikimedia.org/wiki/File:Statue_of_the_Blessed_Virgin_Mary_at_Saint_Anthony_Catholic_Church_in_Helper_Utah.jpg) | 1836 x 3264 | CC BY-SA 4.0 | Yes | |
-| 83 | The Blessed Virgin Mary | `the_blessed_virgin_mary-statue-4.jpg` | [Virgin Mary statue, St Mary's Catholic Church, Northcote](https://commons.wikimedia.org/wiki/File:Virgin_Mary_statue,_St_Mary's_Catholic_Church,_Northcote.jpg) | 3841 x 6000 | CC BY 4.0 | Yes | |
-| 84 | Our Lady of Guadalupe | `our_lady_of_guadalupe-image-1.jpg` | [Virgen de guadalupe1](https://commons.wikimedia.org/wiki/File:Virgen_de_guadalupe1.jpg) | 788 x 1226 | Public domain | No | |
-| 85 | Our Lady of Lourdes | `our_lady_of_lourdes-statue-4.jpg` | [Virgen de Lourdes](https://commons.wikimedia.org/wiki/File:Virgen_de_Lourdes.png) | 1536 x 2048 | CC BY-SA 4.0 | Yes | |
-| 86 | Our Lady of Fatima | `our_lady_of_fatima-statue-1.jpg` | [Our Lady of Fatima Statuette](https://commons.wikimedia.org/wiki/File:Our_Lady_of_Fatima_Statuette.JPG) | 2304 x 3072 | CC BY-SA 2.5 nl | Yes | |
-| 87 | St. Bernadette | `st_bernadette-image-1.jpg` | [Bernadette Soubirous](https://commons.wikimedia.org/wiki/File:Bernadette_Soubirous.jpg) | 1273 x 1643 | Public domain | No | |
-| 88 | St. Junipero Serra | `st_junipero_serra-statue-2.jpg` | [2015-09-18 Mission San Carlos Borromeo de Carmelo 05](https://commons.wikimedia.org/wiki/File:2015-09-18_Mission_San_Carlos_Borromeo_de_Carmelo_05.jpg) | 1467 x 2200 | CC BY-SA 4.0 | Yes | |
-| 89 | St. Junipero Serra | `st_junipero_serra-statue-3.jpg` | [Father Junipero Serra](https://commons.wikimedia.org/wiki/File:Father_Junipero_Serra.jpg) | 3648 x 5472 | CC BY-SA 3.0 | Yes | |
-| 90 | St. Thomas More | `st_thomas_more-image-1.jpg` | [Sir Thomas More by Hans Holbein the Younger](https://commons.wikimedia.org/wiki/File:Sir_Thomas_More_by_Hans_Holbein_the_Younger.jpg) | 2400 x 3134 | Public domain | No | |
-| 91 | Our Lady of Perpetual Help | `our_lady_of_perpetual_help-image-1.jpg` | [Perpetual help original icon](https://commons.wikimedia.org/wiki/File:Perpetual_help_original_icon.jpg) | 500 x 609 | Public domain | No | |
-| 92 | St. Joseph | `st_joseph-statue-1.jpg` | [Joseph (Ciney, église)](https://commons.wikimedia.org/wiki/File:Joseph_%28Ciney,_%C3%A9glise%29.JPG) | 3456 x 4608 | CC BY-SA 4.0 | Yes | |
-| 93 | The Holy Family | `the_holy_family-statue-1.jpg` | [Lazkao - Monasterio de Santa Ana (MM Cistercienses) 25](https://commons.wikimedia.org/wiki/File:Lazkao_-_Monasterio_de_Santa_Ana_%28MM_Cistercienses%29_25.jpg) | 2048 x 1536 | Public domain | No | |
-| 94 | The Holy Family | `the_holy_family-statue-2.jpg` | [Holy Family Catholic Church (North Baltimore, Ohio) - Hol...](https://commons.wikimedia.org/wiki/File:Holy_Family_Catholic_Church_%28North_Baltimore,_Ohio%29_-_Holy_Family_statues,_detail.jpg) | 1913 x 1440 | CC BY-SA 3.0 | Yes | |
-| 95 | The Holy Family | `the_holy_family-statue-4.jpg` | [The Holy Family at Corpus Christi Catholic Church in Frui...](https://commons.wikimedia.org/wiki/File:The_Holy_Family_at_Corpus_Christi_Catholic_Church_in_Fruitland_Idaho.jpg) | 1289 x 1992 | CC BY-SA 4.0 | Yes | |
-| 96 | St. Peter | `st_peter-image-1.jpg` | [Pope-peter pprubens](https://commons.wikimedia.org/wiki/File:Pope-peter_pprubens.jpg) | 2318 x 3051 | Public domain | No | Rubens |
-| 97 | St. Peter | `st_peter-statue-2.jpg` | Supplied by you (local file, not from Commons) | 800 x 800 | Unknown | Check | Statue of St. Peter with the keys, St. Peter's Square |
-| 98 | St. Paul | `st_paul-statue-1.jpg` | [Apostel Paulus Pankratiuskirche Dossenheim](https://commons.wikimedia.org/wiki/File:Apostel_Paulus_Pankratiuskirche_Dossenheim.JPG) | 2736 x 3648 | CC BY-SA 3.0 | Yes | |
-| 99 | St. Paul | `st_paul-statue-2.jpg` | [Reute Pfarrkirche Chor Hl Paulus](https://commons.wikimedia.org/wiki/File:Reute_Pfarrkirche_Chor_Hl_Paulus.jpg) | 1168 x 1797 | CC BY 3.0 | Yes | |
-| 100 | St. Michael the Archangel | `st_michael_the_archangel-image-2.jpg` | [Hadziewicz, Rafał (1803-1886) - Saint Michael the Archang...](https://commons.wikimedia.org/wiki/File:Hadziewicz,_Rafa%C5%82_%281803-1886%29_-_Saint_Michael_the_Archangel_Vanquishing_Satan_-_MNK_XII-A-24_-_National_Museum_Krak%C3%B3w.jpg) | 3051 x 4000 | Public domain | No | |
-| 101 | St. George | `st_george-statue-4.jpg` | [Saint george2](https://commons.wikimedia.org/wiki/File:Saint_george2.jpg) | 1668 x 2274 | CC BY-SA 3.0 | Yes | |
-| 102 | St. Patrick | `st_patrick-image-3.jpg` | [Saint Patrick Catholic Church (Junction City, Ohio) - sta...](https://commons.wikimedia.org/wiki/File:Saint_Patrick_Catholic_Church_%28Junction_City,_Ohio%29_-_stained_glass,_Saint_Patrick_-_detail.jpg) | 2388 x 2991 | CC BY-SA 4.0 | Yes | |
-| 103 | St. John the Baptist | `st_john_the_baptist-statue-1.jpg` | [Inquisitor Palace Birgu 2012 n14](https://commons.wikimedia.org/wiki/File:Inquisitor_Palace_Birgu_2012_n14.jpg) | 2364 x 4135 | CC BY 2.5 | Yes | |
