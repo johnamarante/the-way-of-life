@@ -37,6 +37,7 @@ Two columns in `Catholic_Saints_Trivia.csv` support name matching (Section 6.4).
 
 Two more columns support saint cards (Section 7), also filled in:
 
+- Clues get easier from `Clue 1` to `Clue 10`, but no clue states the saint's name, not even the last one. A nickname, title or birth name may be used as a hint ("The Little Flower," "Curé of Ars"). Clue 1 may be obscure but must fit only one person.
 - `Invocation`: the text shown when the card is used. If empty, use `Saint {Display Name}, pray for me!`, where the display name is the `Saint` column without the leading `St. `. Five saints have an override: The Blessed Virgin Mary (`Holy Mary, Mother of God, pray for me!`) and the four saints whose names contain a parenthetical (Acacius, Erasmus, Pio of Pietrelcina, Teresa of Calcutta), so the parentheses never appear in the prayer.
 - `Portrait`: filename of the saint's portrait image, filled in for all 209 (for example `teresa_of_avila.jpg`). The 256 x 256 JPEG images are in the `portraits/` folder; `saint_portrait_sources.md` lists where each one came from and its license.
 
@@ -460,7 +461,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.12.1") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read. From version 1.12.1 on, the three numbers are the major version, the minor version and the bug fix.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.12.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read. From version 1.12.1 on, the three numbers are the major version, the minor version and the bug fix.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.

@@ -23,7 +23,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // versionCode must go up with every APK you install over an older one; versionName is what people see.
-        versionCode = 30
+        versionCode = 31
         versionName = APP_VERSION
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
