@@ -15,7 +15,7 @@ All content comes from five CSV files in the repo root. Treat each as read-only 
 | `St_Joseph_First_Communion_Catechism_Quiz.csv` | 96 (normal questions) | `Number`, `Question`, `Answer`, `Answer A`, `Answer B`, `Answer C`, `Answer D`, `Correct Answer`, `Picture` |
 | `Catechism_Advanced_Questions.csv` | 311 (advanced questions) | The same columns, plus `CCC References`. `Number` starts at 1001 so it never collides with a normal question. |
 | `Catholic_Saints_Trivia.csv` | 209 | `Saint`, `Year Born`, `Clue 1` through `Clue 10`, `Accepted Names`, `Accepted Spellings`, `Invocation`, `Portrait`, `Lesser Known` |
-| `Catholic_Prayers_Segments.csv` | 32 (16 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
+| `Catholic_Prayers_Segments.csv` | 34 (17 prayers x English/Latin) | `Title`, `Language`, `EasyPrayer` (`TRUE` or `FALSE`, the same for both languages of a prayer; Section 11.2), `Segment 1` through `Segment 20` (unused trailing segments are empty) |
 | `Catholic_Moral_Dilemmas.csv` | 34 | `Number`, `Title`, `Age Level`, `Dilemma`, `Question`, `Right Choice`, `Wrong Choice`, `Catholic Answer`, `Key Principle`, `CCC References`, `Sources` |
 
 Notes on the data:
@@ -352,7 +352,7 @@ When the player taps an eligible card:
 2. Load the segments for the chosen language.
 3. Present the segments in a random order (never already in the correct order).
 
-**Prayer deck.** At the start of each game the 16 prayers are shuffled into a deck, kept in the saved game. Every Prayer Challenge and penance prayer takes the next prayer from the deck, whether the player passes it, runs out of time or gives up; English and Latin are the same prayer, so the language does not matter. Only when the whole deck has been used is it reshuffled, and the new order never starts with the prayer drawn last. With **Easy prayers** on (Section 11.2), prayers not marked easy are skipped as the deck is drawn, so only the seven easy prayers appear, each once per pass. A game saved by an older version gets a new deck the first time it draws a prayer.
+**Prayer deck.** At the start of each game the 17 prayers are shuffled into a deck, kept in the saved game. Every Prayer Challenge and penance prayer takes the next prayer from the deck, whether the player passes it, runs out of time or gives up; English and Latin are the same prayer, so the language does not matter. Only when the whole deck has been used is it reshuffled, and the new order never starts with the prayer drawn last. With **Easy prayers** on (Section 11.2), prayers not marked easy are skipped as the deck is drawn, so only the seven easy prayers appear, each once per pass. A game saved by an older version gets a new deck the first time it draws a prayer.
 
 ### 8.2 Arranging the segments
 
@@ -392,6 +392,7 @@ The time limit scales with the number of segments in the chosen language, from 2
 | The Soul of Christ / Anima Christi | 14 | 90 s |
 | The Memorare / Memorare | 14 | 90 s |
 | The Apostles' Creed / Credo | 20 | 130 s |
+| The Nicene Creed / Symbolum Nicaenum | 20 | 130 s |
 
 Compute the time from the data rather than hard-coding this table, so edits to the CSV stay consistent.
 
@@ -461,7 +462,7 @@ The Codex exists to help players learn, not to hold content back, so everything 
 
 ### 11.1 Main menu buttons
 
-The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.12.2") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read. From version 1.12.1 on, the three numbers are the major version, the minor version and the bug fix.
+The menu shows the game's title over the zoomed board, the buttons below, and the version number (for example "Version 1.12.3") at the bottom center of the screen. The version comes from the `VERSION` file in the repo root, which both builds read. From version 1.12.1 on, the three numbers are the major version, the minor version and the bug fix.
 
 - **Start Game:** begins a new game. If a save exists, ask to confirm before overwriting it.
 - **Resume Game:** continues the saved game. Disabled when there is no save.
